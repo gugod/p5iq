@@ -1,0 +1,93 @@
+#!/usr/bin/env perl
+
+use v5.18;
+use warnings;
+
+use PPI;
+use PPIx::IndexOffsets;
+use File::Next;
+use JSON qw(to_json);
+use Elastijk;
+
+sub scan_this_dir {
+    my ($srcdir, $cb) = @_;
+    my $files = File::Next::files({ file_filter => sub { / \.p[ml] $/x } }, $srcdir);
+    while ( defined ( my $file = $files->() ) ) {
+        $cb->($file);
+    }
+}
+
+sub index_perl_source_code {
+    my ($file) = @_;
+
+    my $document = PPI::Document->new($file) or return;
+    $document->index_offsets;
+
+    say $file;
+    foreach my $token (  $document->tokens  ) {
+        next unless $token->significant;
+
+        my $doc = {
+            file                 => $file,
+            start_offset         => $token->start_offset,
+            stop_offset          => $token->stop_offset,
+            line_number          => $token->line_number,
+            column_number        => $token->column_number,
+            visual_column_number => $token->visual_column_number,
+            logical_line_number  => $token->logical_line_number,
+            content              => $token->content,
+            type                 => $token->class,
+        };
+        index_this($doc);
+    }
+}
+
+sub init_es_object {
+    my $es = Elastijk->new(
+        host => "localhost",
+        port => "9200",
+    );
+
+    unless ($es->exists( index => "p5iq" )) {
+        say '# create index "p5iq"';
+        my ($status, $res) = $es->put(
+            index => "p5iq",
+            body  => {
+                mappings => {
+                    ppi_token => {
+                        properties => {
+                            file                 => { "type" => "string", "index" => "not_analyzed" },
+                            content              => { "type" => "string" },
+                            start_offset         => { "type" => "long" },
+                            stop_offset          => { "type" => "long" },
+                            line_number          => { "type" => "long" },
+                            column_number        => { "type" => "long" },
+                            visual_column_number => { "type" => "long" },
+                            logical_line_number  => { "type" => "long" },
+                            type                 => { "type" => "string", "index" => "not_analyzed" },
+                        }
+                    }
+                }
+            }
+        );
+        say "CREATE INDEX: $status $res";
+    }
+
+    return $es;
+}
+
+sub index_this {
+    state $es = init_es_object();
+
+    my $doc = shift;
+    say to_json($doc, { canonical => 1 });
+
+    $es->post(
+        index => "p5iq",
+        type  => "ppi_token",
+        body   => $doc
+    );
+}
+
+my $srcdir = shift or die "required";
+scan_this_dir($srcdir, \&index_perl_source_code );

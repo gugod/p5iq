@@ -1,0 +1,10 @@
+
+* Thoughts
+
+** command synopsis
+
+p5iq-index ~/src/App-perlbrew
+p5iq-index ~/src/perl
+
+p5iq-query '$foo->bar()'
+p5iq-query ' $v eq "bar" '
