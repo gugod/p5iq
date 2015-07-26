@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+use v5.18;
+use warnings;
+
+use PPI;
+use PPIx::IndexOffsets;
+
+use JSON qw(to_json);
+use Elastijk;
+
+sub search_p5iq_index {
+    my $query = shift;
+
+    my $ppi_doc = PPI::Document->new( \$query );
+    my @tokens = grep {
+        $_->significant
+    } $ppi_doc->tokens;
+
+    my $es_query = {
+        bool => {
+            should => [
+                map {
+                    { match => { content => $_->content } }
+                } @tokens
+            ]
+        }
+    };
+
+    my $es = Elastijk->new( host => "localhost", port => "9200", index => "p5iq" );
+    my ($status, $res) = $es->search(
+        index => "p5iq",
+        type  => "ppi_token",
+        body  => {
+            query => $es_query
+        }
+    );
+    if ($status eq '200') {
+        say to_json($res, { pretty => 1, canonical => 1 });
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
+my $query = shift or die "query required";
+
+search_p5iq_index($query);
