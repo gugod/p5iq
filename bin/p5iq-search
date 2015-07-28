@@ -17,21 +17,34 @@ sub search_p5iq_index {
     } $ppi_doc->tokens;
 
     my $es_query = {
-        bool => {
-            should => [
-                map {
-                    { match => { content => $_->content } }
-                } @tokens
-            ]
+        constant_score => {
+            query => {
+                bool => {
+                    should => [
+                        (map { +{ term => { type => $_->class } } } @tokens),
+                        (map {
+                            { match => { content => $_->content } }
+                        } @tokens)
+                    ]
+                }
+            }
         }
     };
+
+    say to_json($es_query, { pretty => 1 });
 
     my $es = Elastijk->new( host => "localhost", port => "9200", index => "p5iq" );
     my ($status, $res) = $es->search(
         index => "p5iq",
         type  => "ppi_token",
         body  => {
-            query => $es_query
+            query => $es_query,
+            size  => 0,
+            aggs  => {
+                statement => {
+                    terms => { field => "statement_location" }
+                }
+            }
         }
     );
     if ($status eq '200') {
