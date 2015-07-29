@@ -82,13 +82,18 @@ sub init_es_object {
 
 sub index_this {
     state $es = init_es_object();
-
+    state @buffer;
     my $doc = shift;
-    $es->post(
-        index => "p5iq",
-        type  => "ppi_statement",
-        body   => $doc
-    );
+    push @buffer, $doc if $doc;
+    if (@buffer > 500 || !$doc) {
+        $es->post(
+            index => "p5iq",
+            type  => "ppi_statement",
+            command => "_bulk",
+            body => [ map { ({index => {}}, $_) } @buffer ]
+        );
+        @buffer = ();
+    }
 }
 
 my $srcdir = shift or die "required";
