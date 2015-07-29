@@ -21,6 +21,7 @@ sub scan_this_dir {
 sub index_perl_source_code {
     my ($file) = @_;
 
+    say "<<< $file";
     my $document = PPI::Document->new($file) or return;
     my @statements = PPI::Find->new(
         sub {
@@ -31,16 +32,21 @@ sub index_perl_source_code {
     )->in($document);
 
     for my $statement (  @statements  ) {
+        my $doc = {
+            location      => join("\0",$file, $statement->line_number, $statement->column_number),
+            content       => $statement->content,
+            class         => $statement->class,
+            token_content => [],
+            token_class   => [],
+        };
+
         for my $token ( $statement->tokens ) {
             next unless $token->significant;
-
-            my $doc = {
-                statement_location => $file . "\0" . $statement->line_number . "\0" . $statement->column_number,
-                content              => $token->content,
-                type                 => $token->class,
-            };
-            index_this($doc);
+            push @{$doc->{token_content}}, "$token";
+            push @{$doc->{token_class}}, $token->class;
         }
+
+        index_this($doc);
     }
 }
 
@@ -56,24 +62,19 @@ sub init_es_object {
             index => "p5iq",
             body  => {
                 mappings => {
-                    ppi_token => {
+                    ppi_statement => {
                         properties => {
-                            statement_location   => { "type" => "string", "index" => "not_analyzed" },
-                            type                 => { "type" => "string", "index" => "not_analyzed" },
-                            content              => { "type" => "string" },
-                            # file                 => { "type" => "string", "index" => "not_analyzed" },
-                            # start_offset         => { "type" => "long" },
-                            # stop_offset          => { "type" => "long" },
-                            # line_number          => { "type" => "long" },
-                            # column_number        => { "type" => "long" },
-                            # visual_column_number => { "type" => "long" },
-                            # logical_line_number  => { "type" => "long" },
+                            location    => { "type" => "string", "index" => "not_analyzed" },
+                            class       => { "type" => "string", "index" => "not_analyzed" },
+                            content     => { "type" => "string" },
+                            token       => { "type" => "string" },
+                            token_class => { "type" => "string","index" => "not_analyzed" },
                         }
                     },
                 }
             }
         );
-        say "CREATE INDEX: $status $res";
+        say "CREATE INDEX: $status ".to_json($res);
     }
 
     return $es;
@@ -85,7 +86,7 @@ sub index_this {
     my $doc = shift;
     $es->post(
         index => "p5iq",
-        type  => "ppi_token",
+        type  => "ppi_statement",
         body   => $doc
     );
 }

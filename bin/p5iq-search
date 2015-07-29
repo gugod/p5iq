@@ -17,38 +17,26 @@ sub search_p5iq_index {
     } $ppi_doc->tokens;
 
     my $es_query = {
-        constant_score => {
-            query => {
-                bool => {
-                    should => [
-                        (map { +{ term => { type => $_->class } } } @tokens),
-                        (map {
-                            { match => { content => $_->content } }
-                        } @tokens)
-                    ]
-                }
-            }
+        bool => {
+            must   => [ (map { +{ term => { "token_class" => $_->class } } } @tokens) ],
+            should => [ (map { +{ match => { token_content => $_->content } } } @tokens) ]
         }
     };
-
-    say to_json($es_query, { pretty => 1 });
 
     my $es = Elastijk->new( host => "localhost", port => "9200", index => "p5iq" );
     my ($status, $res) = $es->search(
         index => "p5iq",
-        type  => "ppi_token",
+        type  => "ppi_statement",
         body  => {
             query => $es_query,
-            size  => 0,
-            aggs  => {
-                statement => {
-                    terms => { field => "statement_location" }
-                }
-            }
+            size  => 10,
         }
     );
     if ($status eq '200') {
-        say to_json($res, { pretty => 1, canonical => 1 });
+        for (@{ $res->{hits}{hits} }) {
+            my @loc = split("\0", $_->{_source}{location});
+            say join(":", $loc[1], $loc[0]) . "\n" . $_->{_source}{content} . "\n";
+        }
     } else {
         say "Query Error: " . to_json($res);
     }
