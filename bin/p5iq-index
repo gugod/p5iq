@@ -42,7 +42,6 @@ sub index_perl_source_code {
         index_this( $doc );
     }
 
-
     for my $s (@{ $document->find('PPI::Structure::Subscript') ||[] }) {
         my @c = ( $s );
         my $p = $s;
@@ -59,6 +58,7 @@ sub index_perl_source_code {
             token_class   => [map { $_->class }   @c],
             tags          => [
                 "subscript:symbol=$c[0]",
+                "subscript:container=" . join("", map { $_->content } @c[0..$#c-1] ),
                 "subscript:content=$s",
             ],
         };
