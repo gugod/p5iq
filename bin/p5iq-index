@@ -86,7 +86,7 @@ sub index_this {
     }
 }
 
-my $srcdir = shift or die "required";
-scan_this_dir($srcdir, \&index_perl_source_code );
+for my $srcdir (@ARGV) {
+    scan_this_dir($srcdir, \&index_perl_source_code );
+}
 index_this();
-
