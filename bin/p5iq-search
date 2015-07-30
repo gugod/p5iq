@@ -3,18 +3,16 @@ use v5.18;
 use warnings;
 
 use PPI;
-use PPIx::IndexOffsets;
-
+use Getopt::Long;
 use JSON qw(to_json);
 use Elastijk;
 
 sub search_p5iq_index {
-    my $query = shift;
+    my ($query_string, $size) = @_;
+    $size //= 10;
 
-    my $ppi_doc = PPI::Document->new( \$query );
-    my @tokens = grep {
-        $_->significant
-    } $ppi_doc->tokens;
+    my $ppi_doc = PPI::Document->new( \$query_string );
+    my @tokens = grep { $_->significant } $ppi_doc->tokens;
 
     my $es_query = {
         bool => {
@@ -29,19 +27,22 @@ sub search_p5iq_index {
         type  => "ppi_statement",
         body  => {
             query => $es_query,
-            size  => 10,
+            size  => $size,
         }
     );
     if ($status eq '200') {
         for (@{ $res->{hits}{hits} }) {
             my @loc = split("\0", $_->{_source}{location});
-            say join(":", $loc[1], $loc[0]) . "\n" . $_->{_source}{content} . "\n";
+            say join(":", $loc[0], $loc[1]) . "\n" . $_->{_source}{content} . "\n";
         }
     } else {
         say "Query Error: " . to_json($res);
     }
 }
 
-my $query = shift or die "query required";
+GetOptions(
+    "s|size=i" => \(my $size)
+);
+my $query = shift(@ARGV) or die "query required";
 
-search_p5iq_index($query);
+search_p5iq_index($query, $size);
