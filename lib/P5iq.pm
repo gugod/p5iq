@@ -19,6 +19,17 @@ sub analyze_for_index {
     my ($ppi_doc) = @_;
 
     my @doc;
+
+    for my $x ( $ppi_doc->tokens ) {
+        next unless $x->significant;
+        my $location = $x->location;
+        push @doc, {
+            location      => join("\0",@{$location}[0,1]),
+            content       => $x->content,
+            class         => $x->class,
+        };
+    }
+
     for my $statement (@{ $ppi_doc->find('PPI::Statement') ||[] }) {
         my $location = $statement->location;
         my $doc = {
