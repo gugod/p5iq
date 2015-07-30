@@ -26,7 +26,7 @@ sub index_perl_source_code {
     say "<<< $file";
     my $document = PPI::Document->new($file) or return;
 
-    for my $statement (@{ $document->find('PPI::Statement') }) {
+    for my $statement (@{ $document->find('PPI::Statement') ||[] }) {
         my $doc = {
             location      => join("\0",$file, $statement->line_number, $statement->column_number),
             content       => $statement->content,
