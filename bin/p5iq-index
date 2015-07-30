@@ -86,10 +86,9 @@ sub index_this {
     my $doc = shift;
     push @buffer, $doc if $doc;
     if (@buffer > 500 || !$doc) {
-        $es->post(
+        $es->bulk(
             index => "p5iq",
             type  => "ppi_statement",
-            command => "_bulk",
             body => [ map { ({index => {}}, $_) } @buffer ]
         );
         @buffer = ();
@@ -98,3 +97,5 @@ sub index_this {
 
 my $srcdir = shift or die "required";
 scan_this_dir($srcdir, \&index_perl_source_code );
+index_this();
+
