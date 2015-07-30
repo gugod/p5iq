@@ -8,7 +8,6 @@ use lib "${FindBin::Bin}/../lib";
 use P5iq;
 
 use PPI;
-use PPI::Find;
 use File::Next;
 use JSON qw(to_json);
 use Elastijk;
@@ -22,34 +21,33 @@ sub scan_this_dir {
 }
 
 sub index_perl_source_code {
+    state $ACTION = {
+        '__default__' => sub {
+            my ($statement, $doc) = @_;
+            for my $c ($statement->schildren) {
+                push @{$doc->{token_content}}, $c->content;
+                push @{$doc->{token_class}}, $c->class;
+            }
+            return $doc;
+        }
+    };
+
     my ($file) = @_;
 
     say "<<< $file";
     my $document = PPI::Document->new($file) or return;
-    my @statements = PPI::Find->new(
-        sub {
-            my ($this, $top) = @_;
-            return 1 if ($this->isa('PPI::Statement'));
-            return 0;
-        }
-    )->in($document);
 
-    for my $statement (  @statements  ) {
-        my $doc = {
+    for my $statement (@{ $document->find('PPI::Statement') }) {
+        my $action = $ACTION->{ref($statement)} || $ACTION->{__default__};
+        my $doc = $action->($statement, {
             location      => join("\0",$file, $statement->line_number, $statement->column_number),
             content       => $statement->content,
             class         => $statement->class,
             token_content => [],
             token_class   => [],
-        };
-
-        for my $token ( $statement->tokens ) {
-            next unless $token->significant;
-            push @{$doc->{token_content}}, "$token";
-            push @{$doc->{token_class}}, $token->class;
-        }
-
-        index_this($doc);
+            tags          => [],
+        });
+        index_this( $doc ) if $doc;
     }
 }
 
@@ -69,6 +67,7 @@ sub init_es_object {
                             content       => { "type" => "string" },
                             token_content => { "type" => "string" },
                             token_class   => { "type" => "string","index" => "not_analyzed" },
+                            tags          => { "type" => "string","index" => "not_analyzed" },
                         }
                     },
                 }
