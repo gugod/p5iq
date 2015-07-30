@@ -52,7 +52,7 @@ sub init_es_object {
             index => "p5iq",
             body  => {
                 mappings => {
-                    ppi_statement => {
+                    p5_node => {
                         properties => {
                             location    => { "type" => "string", "index" => "not_analyzed" },
                             class         => { "type" => "string", "index" => "not_analyzed" },
@@ -79,7 +79,7 @@ sub index_this {
     if (@buffer > 500 || !$doc) {
         $es->bulk(
             index => "p5iq",
-            type  => "ppi_statement",
+            type  => "p5_node",
             body => [ map { ({index => {}}, $_) } @buffer ]
         );
         @buffer = ();

@@ -28,7 +28,6 @@ sub search_p5iq_index {
 
     my ($status, $res) = P5iq->es->search(
         index => "p5iq",
-        type  => "ppi_statement",
         body  => {
             query => $es_query,
             size  => $size,
