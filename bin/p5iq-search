@@ -2,6 +2,11 @@
 use v5.18;
 use warnings;
 
+use FindBin;
+use lib "${FindBin::Bin}/../lib";
+
+use P5iq;
+
 use PPI;
 use Getopt::Long;
 use JSON qw(to_json);
@@ -21,8 +26,7 @@ sub search_p5iq_index {
         }
     };
 
-    my $es = Elastijk->new( host => "localhost", port => "9200", index => "p5iq" );
-    my ($status, $res) = $es->search(
+    my ($status, $res) = P5iq->es->search(
         index => "p5iq",
         type  => "ppi_statement",
         body  => {

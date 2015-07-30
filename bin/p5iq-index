@@ -2,10 +2,13 @@
 
 use v5.18;
 use warnings;
+use FindBin;
+use lib "${FindBin::Bin}/../lib";
+
+use P5iq;
 
 use PPI;
 use PPI::Find;
-
 use File::Next;
 use JSON qw(to_json);
 use Elastijk;
@@ -51,10 +54,7 @@ sub index_perl_source_code {
 }
 
 sub init_es_object {
-    my $es = Elastijk->new(
-        host => "localhost",
-        port => "9200",
-    );
+    my $es = P5iq->es;
 
     unless ($es->exists( index => "p5iq" )) {
         say '# create index "p5iq"';
@@ -65,10 +65,10 @@ sub init_es_object {
                     ppi_statement => {
                         properties => {
                             location    => { "type" => "string", "index" => "not_analyzed" },
-                            class       => { "type" => "string", "index" => "not_analyzed" },
-                            content     => { "type" => "string" },
-                            token       => { "type" => "string" },
-                            token_class => { "type" => "string","index" => "not_analyzed" },
+                            class         => { "type" => "string", "index" => "not_analyzed" },
+                            content       => { "type" => "string" },
+                            token_content => { "type" => "string" },
+                            token_class   => { "type" => "string","index" => "not_analyzed" },
                         }
                     },
                 }
