@@ -21,33 +21,25 @@ sub scan_this_dir {
 }
 
 sub index_perl_source_code {
-    state $ACTION = {
-        '__default__' => sub {
-            my ($statement, $doc) = @_;
-            for my $c ($statement->schildren) {
-                push @{$doc->{token_content}}, $c->content;
-                push @{$doc->{token_class}}, $c->class;
-            }
-            return $doc;
-        }
-    };
-
     my ($file) = @_;
 
     say "<<< $file";
     my $document = PPI::Document->new($file) or return;
 
     for my $statement (@{ $document->find('PPI::Statement') }) {
-        my $action = $ACTION->{ref($statement)} || $ACTION->{__default__};
-        my $doc = $action->($statement, {
+        my $doc = {
             location      => join("\0",$file, $statement->line_number, $statement->column_number),
             content       => $statement->content,
             class         => $statement->class,
             token_content => [],
             token_class   => [],
             tags          => [],
-        });
-        index_this( $doc ) if $doc;
+        };
+        for my $c ($statement->schildren) {
+            push @{$doc->{token_content}}, $c->content;
+            push @{$doc->{token_class}}, $c->class;
+        }
+        index_this( $doc );
     }
 }
 
