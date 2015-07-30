@@ -41,6 +41,29 @@ sub index_perl_source_code {
         }
         index_this( $doc );
     }
+
+
+    for my $s (@{ $document->find('PPI::Structure::Subscript') ||[] }) {
+        my @c = ( $s );
+        my $p = $s;
+        while ($p = $p->sprevious_sibling) {
+            unshift @c, $p;
+            last if $p->isa("PPI::Token::Symbol");
+        }
+
+        my $doc = {
+            location      => join("\0",$file, $c[0]->line_number, $c[0]->column_number),
+            content       => join("", @c),
+            class         => 'PPI::Structure::Subscript',
+            token_content => [map { $_->content } @c],
+            token_class   => [map { $_->class }   @c],
+            tags          => [
+                "subscript:symbol=$c[0]",
+                "subscript:content=$s",
+            ],
+        };
+        index_this( $doc );
+    }
 }
 
 sub init_es_object {
@@ -54,7 +77,7 @@ sub init_es_object {
                 mappings => {
                     p5_node => {
                         properties => {
-                            location    => { "type" => "string", "index" => "not_analyzed" },
+                            location      => { "type" => "string", "index" => "not_analyzed" },
                             class         => { "type" => "string", "index" => "not_analyzed" },
                             content       => { "type" => "string" },
                             token_content => { "type" => "string" },
