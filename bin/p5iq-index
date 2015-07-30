@@ -22,47 +22,11 @@ sub scan_this_dir {
 
 sub index_perl_source_code {
     my ($file) = @_;
-
     say "<<< $file";
-    my $document = PPI::Document->new($file) or return;
-
-    for my $statement (@{ $document->find('PPI::Statement') ||[] }) {
-        my $doc = {
-            location      => join("\0",$file, $statement->line_number, $statement->column_number),
-            content       => $statement->content,
-            class         => $statement->class,
-            token_content => [],
-            token_class   => [],
-            tags          => [],
-        };
-        for my $c ($statement->schildren) {
-            push @{$doc->{token_content}}, $c->content;
-            push @{$doc->{token_class}}, $c->class;
-        }
-        index_this( $doc );
-    }
-
-    for my $s (@{ $document->find('PPI::Structure::Subscript') ||[] }) {
-        my @c = ( $s );
-        my $p = $s;
-        while ($p = $p->sprevious_sibling) {
-            unshift @c, $p;
-            last if $p->isa("PPI::Token::Symbol");
-        }
-
-        my $doc = {
-            location      => join("\0",$file, $c[0]->line_number, $c[0]->column_number),
-            content       => join("", @c),
-            class         => 'PPI::Structure::Subscript',
-            token_content => [map { $_->content } @c],
-            token_class   => [map { $_->class }   @c],
-            tags          => [
-                "subscript:symbol=$c[0]",
-                "subscript:container=" . join("", map { $_->content } @c[0..$#c-1] ),
-                "subscript:content=$s",
-            ],
-        };
-        index_this( $doc );
+    my $ppi_doc = PPI::Document->new($file) or return;
+    for ( P5iq::analyze_for_index($ppi_doc) ) {
+        $_->{location} = $file . "\0" . $_->{location};
+        index_this($_);
     }
 }
 

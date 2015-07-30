@@ -16,15 +16,7 @@ sub search_p5iq_index {
     my ($query_string, $size) = @_;
     $size //= 10;
 
-    my $ppi_doc = PPI::Document->new( \$query_string );
-    my @tokens = grep { $_->significant } $ppi_doc->tokens;
-
-    my $es_query = {
-        bool => {
-            must   => [ (map { +{ term => { "token_class" => $_->class } } } @tokens) ],
-            should => [ (map { +{ match => { token_content => $_->content } } } @tokens) ]
-        }
-    };
+    my $es_query = P5iq::analyze_for_query( PPI::Document->new( \$query_string ) );
 
     my ($status, $res) = P5iq->es->search(
         index => "p5iq",
