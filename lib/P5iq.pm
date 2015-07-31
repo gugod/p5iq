@@ -102,8 +102,12 @@ sub extract_statement {
         } else {
             $doc->{content} = $statement->content;
             for my $c ($statement->schildren) {
-                push @{$doc->{token_content}}, $c->content;
                 push @{$doc->{token_class}}, $c->class;
+                if ($c->class eq 'PPI::Structure::Block') {
+                    push @{$doc->{token_content}}, "{ ... }";
+                } else {
+                    push @{$doc->{token_content}}, $c->content;
+                }
             }
 
             my ($package,$sub) = $ppi_doc->line_to_sub( $statement->line_number );
