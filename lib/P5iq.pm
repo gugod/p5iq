@@ -34,15 +34,31 @@ sub analyze_for_index {
         my $location = $statement->location;
         my $doc = {
             location      => join("\0",@{$location}[0,1]),
-            content       => $statement->content,
+            content       => '',
             class         => $statement->class,
             token_content => [],
             token_class   => [],
             tags          => [],
         };
-        for my $c ($statement->schildren) {
-            push @{$doc->{token_content}}, $c->content;
-            push @{$doc->{token_class}}, $c->class;
+        if ( ref($statement) eq 'PPI::Statement::Sub' ) {
+            my $subname;
+            for my $c ($statement->schildren) {
+                next unless ref($c) eq 'PPI::Token::Word';
+                next if ($c->content eq 'sub');
+                if (!$subname) {
+                    $subname = $c->content;
+                    last;
+                }
+            }
+            if ($subname) {
+                push @{$doc->{tags}}, "sub:named=" . $subname;
+            }
+        } else {
+            $doc->{content} = $statement->content;
+            for my $c ($statement->schildren) {
+                push @{$doc->{token_content}}, $c->content;
+                push @{$doc->{token_class}}, $c->class;
+            }
         }
         push @doc, $doc;
     }
