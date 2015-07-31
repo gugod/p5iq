@@ -30,7 +30,7 @@ sub create_index_if_not_exist {
                             line_number   => { "type" => "integer" },
                             row_number    => { "type" => "integer" },
                             class         => { "type" => "string", "index" => "not_analyzed" },
-                            content       => { "type" => "string" },
+                            content       => { "type" => "string", "index" => "not_analyzed" },
                             token_content => { "type" => "string" },
                             token_class   => { "type" => "string","index" => "not_analyzed" },
                             tags          => { "type" => "string","index" => "not_analyzed" },
