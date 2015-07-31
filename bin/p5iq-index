@@ -9,6 +9,7 @@ use P5iq;
 
 use PPI;
 use File::Next;
+use File::Basename 'fileparse';
 use JSON qw(to_json);
 use Elastijk;
 
@@ -24,10 +25,14 @@ sub index_perl_source_code {
     my ($file) = @_;
     say "<<< $file";
     my $ppi_doc = PPI::Document->new($file) or return;
-    for ( P5iq::analyze_for_index($ppi_doc) ) {
-        $_->{location} = $file . "\0" . $_->{location};
-        index_this($_);
+    my ($name,$path) = fileparse($file);
+    my @features = P5iq::analyze_for_index($ppi_doc);
+
+    for (@features) {
+        $_->{file} = $file;
     }
+    say ">>> " . scalar(@features) . " features";
+    index_these(\@features);
 }
 
 sub init_es_object {
@@ -41,6 +46,7 @@ sub init_es_object {
                 mappings => {
                     p5_node => {
                         properties => {
+                            file          => { "type" => "string", "index" => "not_analyzed" },
                             location      => { "type" => "string", "index" => "not_analyzed" },
                             class         => { "type" => "string", "index" => "not_analyzed" },
                             content       => { "type" => "string" },
@@ -58,22 +64,17 @@ sub init_es_object {
     return $es;
 }
 
-sub index_this {
+sub index_these {
     state $es = init_es_object();
-    state @buffer;
-    my $doc = shift;
-    push @buffer, $doc if $doc;
-    if (@buffer > 500 || !$doc) {
-        $es->bulk(
-            index => "p5iq",
-            type  => "p5_node",
-            body => [ map { ({index => {}}, $_) } @buffer ]
-        );
-        @buffer = ();
-    }
+    my $features = shift;
+
+    $es->bulk(
+        index => "p5iq",
+        type  => "p5_node",
+        body => [ map { ({index => {}}, $_) } @$features ]
+    );
 }
 
 for my $srcdir (@ARGV) {
     scan_this_dir($srcdir, \&index_perl_source_code );
 }
-index_this();

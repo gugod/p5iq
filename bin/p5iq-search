@@ -28,7 +28,7 @@ sub search_p5iq_index {
     if ($status eq '200') {
         for (@{ $res->{hits}{hits} }) {
             my @loc = split("\0", $_->{_source}{location});
-            say join(":", $loc[0], $loc[1]) . "\n" . $_->{_source}{content} . "\n";
+            say join(":", $_->{_source}{file}, $loc[0], $loc[1]) . "\n" . $_->{_source}{content} . "\n";
         }
     } else {
         say "Query Error: " . to_json($res);
