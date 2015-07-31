@@ -1,6 +1,8 @@
 package P5iq;
 use v5.18;
 
+use PPIx::LineToSub;
+
 sub es {
     state $es = do {
         my ($es_host, $es_port) = ("localhost", "9200");
@@ -72,7 +74,6 @@ sub extract_subscript {
 sub extract_statement {
     my ($ppi_doc) = @_;
     my @doc;
-
     for my $statement (@{ $ppi_doc->find('PPI::Statement') ||[] }) {
         my $location = $statement->location;
         my $doc = {
@@ -84,6 +85,7 @@ sub extract_statement {
             token_class   => [],
             tags          => [],
         };
+
         if ( ref($statement) eq 'PPI::Statement::Sub' ) {
             my $subname;
             for my $c ($statement->schildren) {
@@ -103,6 +105,12 @@ sub extract_statement {
                 push @{$doc->{token_content}}, $c->content;
                 push @{$doc->{token_class}}, $c->class;
             }
+
+            my ($package,$sub) = $ppi_doc->line_to_sub( $statement->line_number );
+            push @{$doc->{tags}}, (
+                "in_package:${package}",
+                "in_sub:${sub}"
+            );
         }
         push @doc, $doc;
     }
@@ -113,6 +121,9 @@ sub extract_statement {
 
 sub analyze_for_index {
     my ($ppi_doc) = @_;
+
+    $ppi_doc->index_line_to_sub;
+
     my @doc;
     push @doc, extract_token($ppi_doc);
     push @doc, extract_subscript($ppi_doc);
