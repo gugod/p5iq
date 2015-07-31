@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+
+use v5.18;
+use warnings;
+use FindBin;
+use lib "${FindBin::Bin}/../lib";
+
+use P5iq;
+
+use PPI;
+use DDP;
+
+my $code = shift || die;
+
+my $ppi_doc = PPI::Document->new( -f $code ? $code : \$code ) or die;
+
+my @docs = P5iq::analyze_for_index($ppi_doc);
+p @docs;
