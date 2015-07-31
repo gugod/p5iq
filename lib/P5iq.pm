@@ -17,6 +17,31 @@ sub es {
     return $es;
 }
 
+sub create_index_if_not_exist {
+    my $es = es();
+    unless ($es->exists( index => "p5iq" )) {
+        my ($status, $res) = $es->put(
+            index => "p5iq",
+            body  => {
+                mappings => {
+                    p5_node => {
+                        properties => {
+                            file          => { "type" => "string", "index" => "not_analyzed" },
+                            line_number   => { "type" => "integer" },
+                            row_number    => { "type" => "integer" },
+                            class         => { "type" => "string", "index" => "not_analyzed" },
+                            content       => { "type" => "string" },
+                            token_content => { "type" => "string" },
+                            token_class   => { "type" => "string","index" => "not_analyzed" },
+                            tags          => { "type" => "string","index" => "not_analyzed" },
+                        }
+                    },
+                }
+            }
+        );
+    }
+}
+
 sub extract_token {
     my ($ppi_doc) = @_;
     my @doc;
