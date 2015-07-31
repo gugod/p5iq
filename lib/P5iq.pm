@@ -22,7 +22,8 @@ sub extract_token {
         next unless $x->significant;
         my $location = $x->location;
         my $doc = {
-            location => join("\0",@{$location}[0,1]),
+            line_number => $location->[0],
+            row_number  => $location->[1],
             content  => $x->content,
             class    => $x->class,
             tags     => [],
@@ -51,7 +52,8 @@ sub extract_subscript {
         }
         my $location = $c[0]->location;
         my $doc = {
-            location      => join("\0",@{$location}[0,1]),
+            line_number   => $location->[0],
+            row_number    => $location->[1],
             content       => join("", @c),
             class         => 'PPI::Structure::Subscript',
             token_content => [map { $_->content } @c],
@@ -74,7 +76,8 @@ sub extract_statement {
     for my $statement (@{ $ppi_doc->find('PPI::Statement') ||[] }) {
         my $location = $statement->location;
         my $doc = {
-            location      => join("\0",@{$location}[0,1]),
+            line_number   => $location->[0],
+            row_number    => $location->[1],
             content       => '',
             class         => $statement->class,
             token_content => [],
