@@ -34,43 +34,57 @@ sub index_perl_source_code {
         $_->{file} = $file;
     }
     say ">>> " . scalar(@features) . " features";
+
+    delete_by_file($file);
     index_these(\@features);
 }
 
-sub init_es_object {
-    my $es = P5iq->es;
+sub es_object {
+    state $es;
 
-    unless ($es->exists( index => "p5iq" )) {
-        say '# create index "p5iq"';
-        my ($status, $res) = $es->put(
-            index => "p5iq",
-            body  => {
-                mappings => {
-                    p5_node => {
-                        properties => {
-                            file          => { "type" => "string", "index" => "not_analyzed" },
-                            line_number   => { "type" => "integer" },
-                            row_number    => { "type" => "integer" },
-                            class         => { "type" => "string", "index" => "not_analyzed" },
-                            content       => { "type" => "string" },
-                            token_content => { "type" => "string" },
-                            token_class   => { "type" => "string","index" => "not_analyzed" },
-                            tags          => { "type" => "string","index" => "not_analyzed" },
-                        }
-                    },
+    unless ($es) {
+        $es = P5iq->es;
+        unless ($es->exists( index => "p5iq" )) {
+            say '# create index "p5iq"';
+            my ($status, $res) = $es->put(
+                index => "p5iq",
+                body  => {
+                    mappings => {
+                        p5_node => {
+                            properties => {
+                                file          => { "type" => "string", "index" => "not_analyzed" },
+                                line_number   => { "type" => "integer" },
+                                row_number    => { "type" => "integer" },
+                                class         => { "type" => "string", "index" => "not_analyzed" },
+                                content       => { "type" => "string" },
+                                token_content => { "type" => "string" },
+                                token_class   => { "type" => "string","index" => "not_analyzed" },
+                                tags          => { "type" => "string","index" => "not_analyzed" },
+                            }
+                        },
+                    }
                 }
-            }
-        );
-        say "CREATE INDEX: $status ".to_json($res);
+            );
+            say "CREATE INDEX: $status ".to_json($res);
+        }
     }
 
     return $es;
 }
 
-sub index_these {
-    state $es = init_es_object();
-    my $features = shift;
+sub delete_by_file {
+    state $es = es_object();
+    my $file = shift;
+    $es->delete(
+        index => "p5iq",
+        command => "_query",
+        body => { query => { term => { file => $file }}}
+    );
+}
 
+sub index_these {
+    state $es = es_object();
+    my $features = shift;
     $es->bulk(
         index => "p5iq",
         type  => "p5_node",
@@ -81,3 +95,6 @@ sub index_these {
 for my $srcdir (@ARGV) {
     scan_this_dir($srcdir, \&index_perl_source_code );
 }
+
+say "### optimizing index";
+es_object->post( command => "_optimize", uri_param => {  max_num_segments  => 1 } );
