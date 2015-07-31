@@ -21,11 +21,20 @@ sub extract_token {
     for my $x ( $ppi_doc->tokens ) {
         next unless $x->significant;
         my $location = $x->location;
-        push @doc, {
-            location      => join("\0",@{$location}[0,1]),
-            content       => $x->content,
-            class         => $x->class,
+        my $doc = {
+            location => join("\0",@{$location}[0,1]),
+            content  => $x->content,
+            class    => $x->class,
+            tags     => [],
         };
+        if (ref($x) eq 'PPI::Token::Symbol') {
+            push @{$doc->{tags}}, (
+                'symbol:named='     . $x->content,
+                'symbol:actual='    . $x->symbol,
+                'symbol:canonical=' . $x->canonical
+            );
+        }
+        push @doc, $doc;
     }
     return @doc;
 }
