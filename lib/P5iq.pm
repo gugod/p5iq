@@ -15,11 +15,9 @@ sub es {
     return $es;
 }
 
-sub analyze_for_index {
+sub extract_token {
     my ($ppi_doc) = @_;
-
     my @doc;
-
     for my $x ( $ppi_doc->tokens ) {
         next unless $x->significant;
         my $location = $x->location;
@@ -29,6 +27,40 @@ sub analyze_for_index {
             class         => $x->class,
         };
     }
+    return @doc;
+}
+
+sub extract_subscript {
+    my ($ppi_doc) = @_;
+    my @doc;
+    for my $s (@{ $ppi_doc->find('PPI::Structure::Subscript') ||[] }) {
+        my @c = ( $s );
+        my $p = $s;
+        while ($p = $p->sprevious_sibling) {
+            unshift @c, $p;
+            last if $p->isa("PPI::Token::Symbol");
+        }
+        my $location = $c[0]->location;
+        my $doc = {
+            location      => join("\0",@{$location}[0,1]),
+            content       => join("", @c),
+            class         => 'PPI::Structure::Subscript',
+            token_content => [map { $_->content } @c],
+            token_class   => [map { $_->class }   @c],
+            tags          => [
+                "subscript:symbol=$c[0]",
+                "subscript:container=" . join("", map { $_->content } @c[0..$#c-1] ),
+                "subscript:content=$s",
+            ],
+        };
+        push @doc, $doc;
+    }
+    return @doc;
+}
+
+sub extract_statement {
+    my ($ppi_doc) = @_;
+    my @doc;
 
     for my $statement (@{ $ppi_doc->find('PPI::Statement') ||[] }) {
         my $location = $statement->location;
@@ -63,28 +95,16 @@ sub analyze_for_index {
         push @doc, $doc;
     }
 
-    for my $s (@{ $ppi_doc->find('PPI::Structure::Subscript') ||[] }) {
-        my @c = ( $s );
-        my $p = $s;
-        while ($p = $p->sprevious_sibling) {
-            unshift @c, $p;
-            last if $p->isa("PPI::Token::Symbol");
-        }
-        my $location = $c[0]->location;
-        my $doc = {
-            location      => join("\0",@{$location}[0,1]),
-            content       => join("", @c),
-            class         => 'PPI::Structure::Subscript',
-            token_content => [map { $_->content } @c],
-            token_class   => [map { $_->class }   @c],
-            tags          => [
-                "subscript:symbol=$c[0]",
-                "subscript:container=" . join("", map { $_->content } @c[0..$#c-1] ),
-                "subscript:content=$s",
-            ],
-        };
-        push @doc, $doc;
-    }
+    return @doc;
+}
+
+
+sub analyze_for_index {
+    my ($ppi_doc) = @_;
+    my @doc;
+    push @doc, extract_token($ppi_doc);
+    push @doc, extract_subscript($ppi_doc);
+    push @doc, extract_statement($ppi_doc);
     return @doc;
 }
 
