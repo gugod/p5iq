@@ -1,13 +1,20 @@
 
-* Thoughts
+* command synopsis
 
-** command synopsis
+Index some content...
 
-p5iq-index ~/src/App-perlbrew
-p5iq-index ~/src/perl
+    p5iq-index ~/src/App-perlbrew
+    p5iq-index ~/src/perl
 
-p5iq-search '$foo->bar()'
-p5iq-search ' $v eq "bar" '
+Locate symbols...
+
+    p5iq-locate '$foo'
+    p5iq-locate '%foo'
+
+Search statements
+
+    p5iq-search '$foo->bar()'
+    p5iq-search ' $v eq "bar" '
 
 * License
 
