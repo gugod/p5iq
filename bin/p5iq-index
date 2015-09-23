@@ -15,12 +15,24 @@ use JSON qw(to_json);
 use Elastijk;
 use Parallel::ForkManager;
 
+sub is_perl {
+    my ($file) = @_;
+
+    return 1 if $file =~ / \.p[ml] $/x;
+    return if $file =~ / \.swp $/x;
+    if (open my $fh, '<', $file) {
+        my $line = <$fh>;
+        return 1 if $line =~ m{^#!.*perl};
+    }
+    return;
+}
+
 sub scan_this_dir {
     my ($srcdir, $cb) = @_;
 
     my $forkman = Parallel::ForkManager->new(2);
 
-    my $files = File::Next::files({ file_filter => sub { / \.p[ml] $/x } }, $srcdir);
+    my $files = File::Next::files({ file_filter => sub { is_perl($File::Next::name) } }, $srcdir);
     while ( defined ( my $file = $files->() ) ) {
         $forkman->start and next;
         $cb->($file);
