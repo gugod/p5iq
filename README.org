@@ -1,3 +1,10 @@
+* configuration
+
+By default connects to Elasticsearch on 'localhost' via port 9200
+but the user can control this by setting the environment variable:
+
+    P5IQ_ELASTICSEARCH_HOSTPORT=hostname:port
+
 
 * command synopsis
 
