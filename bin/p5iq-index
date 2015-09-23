@@ -10,7 +10,6 @@ use P5iq;
 use PPI;
 
 use File::Next;
-use File::Basename 'fileparse';
 use JSON qw(to_json);
 use Elastijk;
 use Parallel::ForkManager;
@@ -46,7 +45,6 @@ sub index_perl_source_code {
     say "<<< $file";
     my $ppi_doc = PPI::Document->new($file) or return;
 
-    my ($name,$path) = fileparse($file);
     my @features = P5iq::analyze_for_index($ppi_doc);
 
     for (@features) {
