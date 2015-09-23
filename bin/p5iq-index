@@ -77,6 +77,7 @@ sub index_these {
     );
 }
 
+die "Usage: $0 [DIRs|FILEs]\n" if not @ARGV;
 for my $srcdir (@ARGV) {
     scan_this_dir($srcdir, \&index_perl_source_code );
 }
