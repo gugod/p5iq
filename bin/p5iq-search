@@ -5,39 +5,13 @@ use warnings;
 use FindBin;
 use lib "${FindBin::Bin}/../lib";
 
-use P5iq;
+use P5iq::Search;
 
-use PPI;
 use Getopt::Long;
-use JSON qw(to_json);
-use Elastijk;
-
-sub search_p5iq_index {
-    my ($query_string, $size) = @_;
-    $size //= 10;
-
-    my $es_query = P5iq::analyze_for_query( PPI::Document->new( \$query_string ) );
-
-    my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
-        body  => {
-            query => $es_query,
-            size  => $size,
-        }
-    );
-    if ($status eq '200') {
-        for (@{ $res->{hits}{hits} }) {
-            my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number}) . "\n" . $_->{_source}{content} . "\n";
-        }
-    } else {
-        say "Query Error: " . to_json($res);
-    }
-}
 
 GetOptions(
     "s|size=i" => \(my $size)
 );
 my $query = shift(@ARGV) or die "query required";
 
-search_p5iq_index($query, $size);
+P5iq::Search::search_p5iq_index($query, $size);
