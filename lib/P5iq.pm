@@ -101,63 +101,6 @@ sub extract_subscript {
     return @doc;
 }
 
-sub extract_statement {
-    my ($ppi_doc) = @_;
-    my @doc;
-    for my $statement (@{ $ppi_doc->find('PPI::Statement') ||[] }) {
-        my $location = $statement->location;
-        my $doc = {
-            line_number   => $location->[0],
-            row_number    => $location->[1],
-            content       => '',
-            class         => $statement->class,
-            token_content => [],
-            token_class   => [],
-            tags          => [],
-        };
-
-        if ( ref($statement) eq 'PPI::Statement::Sub' ) {
-            my $subname;
-            for my $c ($statement->schildren) {
-                next unless ref($c) eq 'PPI::Token::Word';
-                next if ($c->content eq 'sub');
-                if (!$subname) {
-                    $subname = $c->content;
-                    last;
-                }
-            }
-            if ($subname) {
-                push @{$doc->{tags}}, "sub:named=" . $subname;
-            }
-        } elsif ( ref($statement) eq 'PPI::Statement::Variable' ) {
-            for my $c ($statement->schildren) {
-                next unless ref($c) eq 'PPI::Token::Symbol';
-                push @{$doc->{tags}}, "var:named=" . $c->content;
-            }
-        } else {
-            $doc->{content} = $statement->content;
-            for my $c ($statement->schildren) {
-                push @{$doc->{token_class}}, $c->class;
-                if ($c->class eq 'PPI::Structure::Block') {
-                    push @{$doc->{token_content}}, "{ ... }";
-                } else {
-                    push @{$doc->{token_content}}, $c->content;
-                }
-            }
-
-            my ($package,$sub) = $ppi_doc->line_to_sub( $statement->line_number );
-            push @{$doc->{tags}}, (
-                "in_package:${package}",
-                "in_sub:${sub}"
-            );
-        }
-        push @doc, $doc;
-    }
-
-    return @doc;
-}
-
-
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
@@ -166,7 +109,6 @@ sub analyze_for_index {
     my @doc;
     push @doc, extract_token($ppi_doc);
     push @doc, extract_subscript($ppi_doc);
-    push @doc, extract_statement($ppi_doc);
     return @doc;
 }
 
