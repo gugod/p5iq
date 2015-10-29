@@ -63,8 +63,7 @@ sub extract_token {
             );
             if ( ref(my $x_parent = $x->parent) eq 'PPI::Statement::Variable' ) {
                 push @{$doc->{tags}}, (
-                    'in:statement:variable',
-                    'var:named=' . $x->content
+                    'in:statement:variable'
                 );
             }
         }
