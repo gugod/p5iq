@@ -61,6 +61,11 @@ sub extract_token {
                 'symbol:actual='    . $x->symbol,
                 'symbol:canonical=' . $x->canonical
             );
+            if ( ref(my $x_parent = $x->parent) eq 'PPI::Statement::Variable' ) {
+                push @{$doc->{tags}}, (
+                    'var:named=' . $x->content
+                );
+            }
         }
         push @doc, $doc;
     }
