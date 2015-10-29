@@ -57,7 +57,6 @@ sub extract_token {
         };
         if (ref($x) eq 'PPI::Token::Symbol') {
             push @{$doc->{tags}}, (
-                'symbol:name='     . $x->content,
                 'symbol:actual='    . $x->symbol,
                 'symbol:canonical=' . $x->canonical
             );
