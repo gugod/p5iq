@@ -11,9 +11,9 @@ sub locate_symbols {
     my ($query_string, $size, $symbol, $sub_named) = @_;
 
     my $ppi_doc = PPI::Document->new( \$query_string );
-    
+
     my $es_query;
-    
+
     if ($symbol) {
         my @symbols = grep { $_->isa("PPI::Token") } $ppi_doc->tokens;
         $es_query = {
@@ -31,13 +31,22 @@ sub locate_symbols {
                     map { +{ term => { tags => "sub:named=$_" } } } @t
                 ]
             }
-        };    
+        };
+    } else {
+        my @t = grep { $_->isa("PPI::Token::Symbol") } $ppi_doc->tokens;
+        $es_query = {
+            bool => {
+                must => [
+                    map { +{ term => { tags => "symbol:actual=$_" } } } @t
+                ]
+            }
+        };
     }
-    
+
     if (!$es_query) {
         die "Not sure what you're looking for...";
     }
-    
+
     my ($status, $res) = P5iq->es->search(
         index => "p5iq",
         body  => {
@@ -80,4 +89,3 @@ sub search_p5iq_index {
 
 
 1;
-
