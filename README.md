@@ -5,6 +5,12 @@ This can be controled with the following environment variable:
 
     P5IQ_ELASTICSEARCH_HOSTPORT=example.com:9200
 
+# Setup
+
+## Install dependencies
+
+    cpanm -L local/ --installdeps .
+
 # command synopsis
 
 ## Index some content
@@ -21,7 +27,8 @@ This can be controled with the following environment variable:
 
     p5iq-search '$foo->bar()'
     p5iq-search ' $v eq "bar" '
-    
+
+
 # License
 
 MIT License: http://gugod.mit-license.org/
