@@ -125,16 +125,9 @@ sub extract_statement {
                 push @{$doc->{tags}}, "sub:named=" . $subname;
             }
         } elsif ( ref($statement) eq 'PPI::Statement::Variable' ) {
-            my $name;
             for my $c ($statement->schildren) {
                 next unless ref($c) eq 'PPI::Token::Symbol';
-                if (!$name) {
-                    $name = $c->content;
-                    last;
-                }
-            }
-            if ($name) {
-                push @{$doc->{tags}}, "var:named=" . $name;
+                push @{$doc->{tags}}, "var:named=" . $c->content;
             }
         } else {
             $doc->{content} = $statement->content;
