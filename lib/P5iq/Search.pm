@@ -64,6 +64,38 @@ sub locate_symbols {
     }
 }
 
+sub locate_symbols_hash_keys {
+    my ($query_string, $size) = @_;
+    my $ppi_doc = PPI::Document->new( \$query_string );
+    my @t = grep { $_->isa("PPI::Token::Symbol") } $ppi_doc->tokens;
+    my ($status, $res) = P5iq->es->search(
+        index => "p5iq",
+        body  => {
+            size  => $size,
+            query => {
+                bool => {
+                    must => [
+                        map { +{ term => { tags => "subscript:symbol=$_" } } } @t
+                    ]
+                },
+            },
+            aggs => {
+                hash_keys => {
+                    terms => { field => "tags" }
+                },
+            }
+        }
+    );
+    if ($status eq '200') {
+        my @keys = map{ $_->{key} = substr($_->{key},18); $_->{key} }
+            grep { $_->{key} =~ /^subscript:content={/ }
+            @{ $res->{aggregations}{hash_keys}{buckets} };
+        say join("\n", @keys);
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
 sub search_p5iq_index {
     my ($query_string, $size) = @_;
     $size //= 10;
