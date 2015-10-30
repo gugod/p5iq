@@ -71,6 +71,24 @@ sub extract_token {
                     );
                 }
             }
+
+            #Look for var definition like: my ($a, $b) = @_
+            if( ref($x->parent) eq 'PPI::Statement::Expression'
+                && ref($x->parent->parent) eq 'PPI::Structure::List'
+                && ref($x->parent->parent->parent) eq 'PPI::Statement::Variable'
+            ){
+                push @{$doc->{tags}}, (
+                    'in:statement:variable'
+                );
+
+                if( ref($x->parent->parent->snext_sibling) eq 'PPI::Token::Operator'
+                    && $x->parent->parent->snext_sibling->content eq '='
+                ){
+                    push @{$doc->{tags}}, (
+                        'in:statement:variable:defined'
+                    );
+                }
+            }
         }
         push @doc, $doc;
     }
