@@ -114,22 +114,24 @@ sub extract_function_calls {
     # foo(); foo(1,2,3); foo( bar(1,2,3), 4)
     for my $s (@{ $ppi_doc->find('PPI::Token::Word') ||[]}) {
         next unless ref($s->parent) eq 'PPI::Statement';
-        my $doc;
-        my $p = $s->snext_sibling;
-        if (ref($p) eq 'PPI::Structure::List') {
-            $doc = {
-                line_number   => $s->location->[0],
-                row_number    => $p->location->[1],
-                content       => join("", "$s", "$p"),
-                class         => 'P5iq::FunctionCall',
-                tags          => [
-                    "function:call",
-                    "function:name=$s",
-                    "function:arglist=$p"
-                ],
-            };
-        }
-        push(@doc, $doc) if $doc;
+
+        my $prev = $s->sprevious_sibling;
+        next if ($prev && ref($prev) eq 'PPI::Token::Operator' && $prev->content eq "->");
+
+        my $args = $s->snext_sibling;
+        next unless ref($args) eq 'PPI::Structure::List';
+
+        push @doc, {
+            line_number   => $s->location->[0],
+            row_number    => $args->location->[1],
+            content       => join("", "$s", "$args"),
+            class         => 'P5iq::FunctionCall',
+            tags          => [
+                "function:call",
+                "function:name=$s",
+                "function:arglist=$args"
+            ],
+        };
     }
 
     # TODO: Look for all "word followed by a list not within parenthesis"
