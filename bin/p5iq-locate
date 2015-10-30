@@ -10,38 +10,39 @@ use P5iq::Search;
 
 use Getopt::Long;
 
+my %args;
 GetOptions(
-    "s|size=i" => \(my $size = 10),
-    "symbol" => \(my $symbol),
-    "sub-named" => \(my $sub_named),
-    "hash-keys" => \(my $hash_keys),
-    "hash-name" => \(my $hash_name),
-    "var-def" => \(my $var_def),
-    "arglist" => \(my $arglist),
-    "fun-call" => \(my $fun_call),
-    "whohas" => \(my $whohas),
+    \%args,
+    "s|size=i",
+    "symbol",
+    "sub-named",
+    "hash-keys",
+    "hash-name",
+    "var-def",
+    "arglist",
+    "fun-call",
+    "whohas",
 );
 
 my $query_string = shift // die "No query string...";
-if( $hash_keys ){
-    P5iq::Search::locate_hash_keys($query_string, $size);
+if( $args{'hash-keys'} ){
+    P5iq::Search::locate_hash_keys($query_string, $args{size});
 }
-elsif( $hash_name ){
-    P5iq::Search::locate_hash_name($query_string, $size);
+elsif( $args{'hash-name'} ){
+    P5iq::Search::locate_hash_name($query_string, $args{size});
 }
-elsif( $var_def ){
-    P5iq::Search::locate_var_def($query_string, $size);
+elsif( $args{'var-def'} ){
+    P5iq::Search::locate_var_def($query_string, $args{size});
 }
-elsif ($arglist) {
-    P5iq::Search::locate_arglist($query_string, $size);
+elsif ($args{'arglist'}) {
+    P5iq::Search::locate_arglist($query_string, $args{size});
 }
-elsif ($fun_call) {
-    P5iq::Search::locate_function_calls($query_string, $size);
+elsif ($args{'fun-call'}) {
+    P5iq::Search::locate_function_calls($query_string, $args{size});
 }
-elsif ($whohas) {
-    P5iq::Search::locate_method_calls($query_string, $size);
+elsif ($args{'whohas'}) {
+    P5iq::Search::locate_method_calls($query_string, $args{size});
 }
-else{
-    P5iq::Search::locate_symbols($query_string, $size, $symbol, $sub_named, $hash_keys);
+else {
+    P5iq::Search::locate_symbols($query_string, $args{size}, $args{symbol}, $args{'sub-named'}, $args{'hash-keys'});
 }
-
