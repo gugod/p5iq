@@ -64,6 +64,12 @@ sub extract_token {
                 push @{$doc->{tags}}, (
                     'in:statement:variable'
                 );
+                my $ns = $x->snext_sibling;
+                if( ref($ns) eq 'PPI::Token::Operator' && $ns->content eq '=' ){
+                    push @{$doc->{tags}}, (
+                        'in:statement:variable:defined'
+                    );
+                }
             }
         }
         push @doc, $doc;

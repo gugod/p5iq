@@ -16,6 +16,7 @@ GetOptions(
     "sub-named" => \(my $sub_named),
     "hash-keys" => \(my $hash_keys),
     "hash-name" => \(my $hash_name),
+    "var-def" => \(my $var_def),
     "arglist" => \(my $arglist),
     "fun-call" => \(my $fun_call),
 );
@@ -26,6 +27,9 @@ if( $hash_keys ){
 }
 elsif( $hash_name ){
     P5iq::Search::locate_symbols_hash_name($query_string, $size);
+}
+elsif( $var_def ){
+    P5iq::Search::locate_var_def($query_string, $size);
 }
 elsif ($arglist) {
     P5iq::Search::locate_arglist($query_string, $size);
