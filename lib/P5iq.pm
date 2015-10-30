@@ -100,6 +100,38 @@ sub extract_subscript {
     return @doc;
 }
 
+sub extract_function_calls {
+    my ($ppi_doc) = @_;
+    my @doc;
+
+    # Look for all "word followed by a list within parenthesis"
+    # foo(); foo(1,2,3); foo( bar(1,2,3), 4)
+    for my $s (@{ $ppi_doc->find('PPI::Token::Word') ||[]}) {
+        my $doc;
+        my $p = $s->snext_sibling;
+        if (ref($p) eq 'PPI::Structure::List') {
+            my $location = $s->location;
+            $doc = {
+                line_number   => $s->location->[0],
+                row_number    => $p->location->[1],
+                content       => join("", "$s", "$p"),
+                class         => 'P5iq::FunctionCall',
+                tags          => [
+                    "function:call",
+                    "function:name=$s",
+                    "function:arglist=$p"
+                ],
+            };
+        }
+        push(@doc, $doc) if $doc;
+    }
+
+    # TODO: Look for all "word followed by a list not within parenthesis"
+    # foo; foo 1,2; foo bar(1,2,3), 4;
+
+    return @doc;
+}
+
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
@@ -108,6 +140,7 @@ sub analyze_for_index {
     my @doc;
     push @doc, extract_token($ppi_doc);
     push @doc, extract_subscript($ppi_doc);
+    push @doc, extract_function_calls($ppi_doc);
     return @doc;
 }
 
