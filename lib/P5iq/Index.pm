@@ -88,8 +88,6 @@ sub index_dirs {
     for my $srcdir (@dirs) {
         scan_this_dir($srcdir, \&index_perl_source_code );
     }
-    say "### optimizing index";
-    es_object->post( command => "_optimize", uri_param => {  max_num_segments  => 1 } );
 }
 
 
