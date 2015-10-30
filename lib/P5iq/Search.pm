@@ -96,6 +96,42 @@ sub locate_symbols_hash_keys {
     }
 }
 
+sub locate_arglist {
+    my ($query_string, $size) = @_;
+    $size //= 10;
+
+    my ($status, $res) = P5iq->es->search(
+        index => "p5iq",
+        body  => {
+            size  => 0,
+            query => {
+                bool => {
+                    must => [
+                        +{ term => { tags => "function:call" } },
+                        +{ term => { tags => "function:name=$query_string" } },
+                    ]
+                },
+            },
+            aggs => {
+                hash_keys => {
+                    terms => {
+                        size  => $size,
+                        field => "tags",
+                        include => "function:arglist=.*"
+                    }
+                },
+            }
+        }
+    );
+    if ($status eq '200') {
+        my @keys = map{ $_->{key} = substr($_->{key},17); $_->{key} }
+        @{ $res->{aggregations}{hash_keys}{buckets} };
+        say join("\n", @keys);
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
 sub search_p5iq_index {
     my ($query_string, $size) = @_;
     $size //= 10;
