@@ -9,6 +9,9 @@ use JSON qw(to_json);
 use Elastijk;
 use Parallel::ForkManager;
 
+use Sys::Info;
+use constant NCPU => Sys::Info->new->device('CPU')->count;
+
 sub is_perl {
     my ($file) = @_;
 
@@ -24,7 +27,7 @@ sub is_perl {
 sub scan_this_dir {
     my ($srcdir, $cb) = @_;
 
-    my $forkman = Parallel::ForkManager->new(2);
+    my $forkman = Parallel::ForkManager->new( NCPU - 1 );
 
     my $files = File::Next::files({ file_filter => sub { is_perl($File::Next::name) } }, $srcdir);
     while ( defined ( my $file = $files->() ) ) {
