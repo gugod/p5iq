@@ -1,5 +1,5 @@
 package P5iq::Search;
-use v5.18;
+use v5.14;
 
 use P5iq;
 
