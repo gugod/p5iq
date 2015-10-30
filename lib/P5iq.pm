@@ -111,7 +111,6 @@ sub extract_function_calls {
         my $doc;
         my $p = $s->snext_sibling;
         if (ref($p) eq 'PPI::Structure::List') {
-            my $location = $s->location;
             $doc = {
                 line_number   => $s->location->[0],
                 row_number    => $p->location->[1],
