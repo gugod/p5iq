@@ -107,6 +107,7 @@ sub extract_function_calls {
     # Look for all "word followed by a list within parenthesis"
     # foo(); foo(1,2,3); foo( bar(1,2,3), 4)
     for my $s (@{ $ppi_doc->find('PPI::Token::Word') ||[]}) {
+        next unless ref($s->parent) eq 'PPI::Statement';
         my $doc;
         my $p = $s->snext_sibling;
         if (ref($p) eq 'PPI::Structure::List') {
