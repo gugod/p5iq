@@ -71,7 +71,6 @@ sub locate_symbols_hash_keys {
     my ($status, $res) = P5iq->es->search(
         index => "p5iq",
         body  => {
-            size  => $size,
             query => {
                 bool => {
                     must => [
@@ -81,14 +80,18 @@ sub locate_symbols_hash_keys {
             },
             aggs => {
                 hash_keys => {
-                    terms => { field => "tags" }
+                    terms => {
+                        field => "tags",
+                        include => ".*content.*",
+                        exclude => ".*]",
+                        size => 0,
+                    }
                 },
             }
         }
     );
     if ($status eq '200') {
-        my @keys = map{ $_->{key} = substr($_->{key},18); $_->{key} }
-            grep { $_->{key} =~ /^subscript:content={/ }
+        my @keys = map{ $_->{key} = substr($_->{key}, length('subscript::content=') - 1 ); $_->{key} }
             @{ $res->{aggregations}{hash_keys}{buckets} };
         say join("\n", @keys);
     } else {
