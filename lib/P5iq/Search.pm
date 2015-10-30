@@ -64,7 +64,7 @@ sub locate_symbols {
     }
 }
 
-sub locate_symbols_hash_keys {
+sub locate_hash_keys {
     my ($query_string, $size) = @_;
     my $ppi_doc = PPI::Document->new( \$query_string );
     my @t = grep { $_->isa("PPI::Token::Symbol") } $ppi_doc->tokens;
@@ -99,7 +99,7 @@ sub locate_symbols_hash_keys {
     }
 }
 
-sub locate_symbols_hash_name {
+sub locate_hash_name {
     my ($query_string, $size) = @_;
     my ($status, $res) = P5iq->es->search(
         index => "p5iq",

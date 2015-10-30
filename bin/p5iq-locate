@@ -23,10 +23,10 @@ GetOptions(
 
 my $query_string = shift // die "No query string...";
 if( $hash_keys ){
-    P5iq::Search::locate_symbols_hash_keys($query_string, $size);
+    P5iq::Search::locate_hash_keys($query_string, $size);
 }
 elsif( $hash_name ){
-    P5iq::Search::locate_symbols_hash_name($query_string, $size);
+    P5iq::Search::locate_hash_name($query_string, $size);
 }
 elsif( $var_def ){
     P5iq::Search::locate_var_def($query_string, $size);
