@@ -167,6 +167,34 @@ sub locate_arglist {
     }
 }
 
+sub locate_function_calls {
+    my ($query_string, $size) = @_;
+    $size //= 10;
+
+    my ($status, $res) = P5iq->es->search(
+        index => "p5iq",
+        body  => {
+            size  => $size,
+            query => {
+                bool => {
+                    must => [
+                        +{ term => { tags => "function:call" } },
+                        +{ term => { tags => "function:name=$query_string" } },
+                    ]
+                },
+            }
+        }
+    );
+    if ($status eq '200') {
+        for (@{ $res->{hits}{hits} }) {
+            my $src =$_->{_source};
+            say join(":", $src->{file}, $src->{line_number}, $src->{row_number});
+        }
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
 sub search_p5iq_index {
     my ($query_string, $size) = @_;
     $size //= 10;
