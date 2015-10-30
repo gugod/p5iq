@@ -19,6 +19,7 @@ GetOptions(
     "var-def" => \(my $var_def),
     "arglist" => \(my $arglist),
     "fun-call" => \(my $fun_call),
+    "whohas" => \(my $whohas),
 );
 
 my $query_string = shift // die "No query string...";
@@ -36,6 +37,9 @@ elsif ($arglist) {
 }
 elsif ($fun_call) {
     P5iq::Search::locate_function_calls($query_string, $size);
+}
+elsif ($whohas) {
+    P5iq::Search::locate_method_calls($query_string, $size);
 }
 else{
     P5iq::Search::locate_symbols($query_string, $size, $symbol, $sub_named, $hash_keys);

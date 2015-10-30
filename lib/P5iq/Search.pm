@@ -192,6 +192,7 @@ sub locate_arglist {
     } else {
         say "Query Error: " . to_json($res);
     }
+
 }
 
 sub locate_function_calls {
@@ -217,6 +218,41 @@ sub locate_function_calls {
             my $src =$_->{_source};
             say join(":", $src->{file}, $src->{line_number}, $src->{row_number});
         }
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
+sub locate_method_calls {
+    my ($query_string, $size) = @_;
+    $size //= 10;
+
+    my ($status, $res) = P5iq->es->search(
+        index => "p5iq",
+        body  => {
+            size  => $size,
+            query => {
+                bool => {
+                    must => [
+                        +{ term => { tags => "method:call" } },
+                        +{ term => { tags => "method:name=$query_string" } },
+                    ]
+                },
+            },
+            aggs => {
+                method_context => {
+                    terms => {
+                        size  => $size,
+                        field => "tags",
+                        include => "method:context=.*"
+                    }
+                },
+            }
+        }
+    );
+    if ($status eq '200') {
+        my @keys = map{ $_->{key} = substr($_->{key},15); $_->{key} } @{ $res->{aggregations}{method_context}{buckets} };
+        say join("\n", @keys);
     } else {
         say "Query Error: " . to_json($res);
     }
