@@ -40,7 +40,6 @@ sub scan_this_dir {
 
 sub index_perl_source_code {
     my ($file) = @_;
-    say "<<< $file";
     my $ppi_doc = PPI::Document->new($file) or return;
 
     my @features = P5iq::analyze_for_index($ppi_doc);
@@ -48,7 +47,7 @@ sub index_perl_source_code {
     for (@features) {
         $_->{file} = $file;
     }
-    say ">>> " . scalar(@features) . " features";
+    say "[$$] index\t$file\t" . scalar(@features) . " features";
 
     delete_by_file($file);
     index_these(\@features);
