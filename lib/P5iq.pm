@@ -158,6 +158,45 @@ sub extract_function_calls {
     return @doc;
 }
 
+sub extract_method_calls {
+    my ($ppi_doc) = @_;
+
+    my @doc;
+    for my $s (@{ $ppi_doc->find('PPI::Token::Operator') ||[]}) {
+        next unless $s->content eq '->';
+
+        my $method = $s->snext_sibling;
+        next unless $method->isa('PPI::Token');
+
+        my @ctxt;
+        my $p = $s;
+        while ($p = $p->sprevious_sibling) {
+            last if !$p->isa('PPI::Token') || $p->isa('PPI::Token::Operator') && $p->content ne '->';
+            last if @ctxt && $p->isa('PPI::Token::Word') && !$ctxt[0]->isa('PPI::Token::Operator');
+            unshift(@ctxt, $p);
+        }
+
+        my $context = @ctxt ? join("", @ctxt) : "???";
+
+        my $args = $method->snext_sibling;
+        $args = (ref($args) eq 'PPI::Structure::List') ? $args->content : "";
+
+        push @doc, {
+            line_number   => $method->location->[0],
+            row_number    => $method->location->[1],
+            content       => join("", "$context", "->", "$method", "$args"),
+            class         => 'P5iq::MethodCall',
+            tags          => [
+                "method:call",
+                "method:name=$method",
+                "method:context=$context",
+                "method:arglist=$args"
+            ],
+        };
+    }
+    return @doc;
+}
+
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
@@ -167,6 +206,7 @@ sub analyze_for_index {
     push @doc, extract_token($ppi_doc);
     push @doc, extract_subscript($ppi_doc);
     push @doc, extract_function_calls($ppi_doc);
+    push @doc, extract_method_calls($ppi_doc);
     return @doc;
 }
 
