@@ -15,12 +15,16 @@ GetOptions(
     "symbol" => \(my $symbol),
     "sub-named" => \(my $sub_named),
     "hash-keys" => \(my $hash_keys),
+    "hash-name" => \(my $hash_name),
     "arglist" => \(my $arglist),
 );
 
 my $query_string = shift // die "No query string...";
 if( $hash_keys ){
     P5iq::Search::locate_symbols_hash_keys($query_string, $size);
+}
+elsif( $hash_name ){
+    P5iq::Search::locate_symbols_hash_name($query_string, $size);
 }
 elsif ($arglist) {
     P5iq::Search::locate_arglist($query_string, $size);

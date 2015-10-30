@@ -99,6 +99,38 @@ sub locate_symbols_hash_keys {
     }
 }
 
+sub locate_symbols_hash_name {
+    my ($query_string, $size) = @_;
+    my ($status, $res) = P5iq->es->search(
+        index => "p5iq",
+        body  => {
+            query => {
+                bool => {
+                    must => [
+                        +{ term => { tags => "subscript:content={$query_string}" } }
+                    ]
+                },
+            },
+            aggs => {
+                hash_name => {
+                    terms => {
+                        field => "tags",
+                        include => "subscript:symbol.*",
+                        size => 0,
+                    }
+                },
+            }
+        }
+    );
+    if ($status eq '200') {
+        my @keys = map{ $_->{key} = substr($_->{key}, length('subscript:symbol=') ); $_->{key} }
+            @{ $res->{aggregations}{hash_name}{buckets} };
+        say join("\n", @keys);
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
 sub locate_arglist {
     my ($query_string, $size) = @_;
     $size //= 10;
