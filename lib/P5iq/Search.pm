@@ -5,7 +5,6 @@ use P5iq;
 
 use PPI;
 use JSON qw(to_json);
-use Elastijk;
 
 sub locate_symbols {
     my ($query_string, $size, $symbol, $sub_named) = @_;
