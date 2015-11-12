@@ -18,4 +18,5 @@ before_install:
 #  - cpanm --notest Test::Version
 services:
   - elasticsearch
-
+script:
+  - prove -lv
