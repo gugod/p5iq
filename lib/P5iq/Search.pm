@@ -55,7 +55,7 @@ sub locate_symbols {
         }
     );
     if ($status eq '200') {
-        for (@{ $res->{hits}{hits} }) {
+        for (sort { $a->{_source}{file} cmp $b->{_source}{file} or $a->{_source}{line_number} <=> $b->{_source}{line_number} } @{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
             say join(":", $src->{file}, $src->{line_number}) . ": " . $_->{_source}{content};
         }
