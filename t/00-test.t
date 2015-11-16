@@ -16,7 +16,7 @@ P5iq::Index::index_dirs('lib');
 my ($stdout, $stderr, $exit) = capture {
     P5iq::Search::locate_symbols('unshift', 10, 1, 0);
 };
-is $stdout, "lib/P5iq.pm:77: unshift\n";
+is $stdout, "lib/P5iq.pm:105: unshift\nlib/P5iq.pm:176: unshift\n";
 
 
 ($stdout, $stderr, $exit) = capture {
