@@ -2,6 +2,7 @@ package P5iq;
 use v5.14;
 
 use PPIx::LineToSub;
+use Elastijk;
 
 sub es {
     state $es = do {

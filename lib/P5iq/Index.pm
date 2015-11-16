@@ -6,7 +6,6 @@ use PPI;
 
 use File::Next;
 use JSON qw(to_json);
-use Elastijk;
 use Parallel::ForkManager;
 
 use Sys::Info;
