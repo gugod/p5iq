@@ -24,7 +24,7 @@ sub es {
 
 sub create_index_if_not_exist {
     my $es = es();
-    unless ($es->exists( index => "p5iq" )) {
+    unless ($es->exists( index => idx() )) {
         my ($status, $res) = $es->put(
             index => idx(),
             body  => {

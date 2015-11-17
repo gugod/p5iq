@@ -6,19 +6,22 @@ use warnings;
 use Test::More;
 use Capture::Tiny qw(capture);
 
-plan tests => 1;
+plan tests => 2;
 
 $ENV{P5IQ_INDEX} = "p5iq_$$";
 END {
     P5iq::delete_all();
 }
 
-diag "P5IQ_INDEX: $ENV{P5IQ_INDEX}";
-
 use P5iq::Index;
 use P5iq::Search;
 
-P5iq::Index::index_dirs('lib');
+diag "P5IQ_INDEX: $ENV{P5IQ_INDEX}";
+is P5iq::idx(), $ENV{P5IQ_INDEX}, 'idx() as expected';
+
+# this call is forking which breaks the END block so for now we call the external command.
+# P5iq::Index::index_dirs('lib');
+system $^X, 'bin/p5iq-index', 'lib';
 
 my ($stdout, $stderr, $exit) = capture {
     P5iq::Search::locate_symbols('unshift', 10, 1, 0);
