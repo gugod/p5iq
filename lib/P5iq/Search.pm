@@ -8,6 +8,16 @@ use JSON qw(to_json);
 
 sub locate_symbols {
     my ($query_string, $size, $symbol, $sub_named) = @_;
+    my $res = _locate_symbols($query_string, $size, $symbol, $sub_named);
+    for (sort { $a->{_source}{file} cmp $b->{_source}{file} or $a->{_source}{line_number} <=> $b->{_source}{line_number} } @{ $res }) {
+        my $src =$_->{_source};
+        say join(":", $src->{file}, $src->{line_number}) . ": " . $_->{_source}{content};
+    }
+    return;
+}
+
+sub _locate_symbols {
+    my ($query_string, $size, $symbol, $sub_named) = @_;
 
     my $ppi_doc = PPI::Document->new( \$query_string );
 
@@ -54,12 +64,10 @@ sub locate_symbols {
         }
     );
     if ($status eq '200') {
-        for (sort { $a->{_source}{file} cmp $b->{_source}{file} or $a->{_source}{line_number} <=> $b->{_source}{line_number} } @{ $res->{hits}{hits} }) {
-            my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number}) . ": " . $_->{_source}{content};
-        }
+        return $res->{hits}{hits};
     } else {
         say "Query Error: " . to_json($res);
+        return [];
     }
 }
 
