@@ -1,3 +1,4 @@
 local/
 perl_modules/
 *~
+*.swp
