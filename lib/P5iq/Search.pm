@@ -47,7 +47,7 @@ sub locate_symbols {
     }
 
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             query => $es_query,
             size  => $size,
@@ -68,7 +68,7 @@ sub locate_hash_keys {
     my $ppi_doc = PPI::Document->new( \$query_string );
     my @t = grep { $_->isa("PPI::Token::Symbol") } $ppi_doc->tokens;
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             query => {
                 bool => {
@@ -101,7 +101,7 @@ sub locate_hash_keys {
 sub locate_hash_name {
     my ($query_string, $size) = @_;
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             query => {
                 bool => {
@@ -134,7 +134,7 @@ sub locate_var_def {
     my ($query_string, $size) = @_;
     say "size= $size";
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             size => $size,
             query => {
@@ -162,7 +162,7 @@ sub locate_arglist {
     $size //= 10;
 
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             size  => 0,
             query => {
@@ -199,7 +199,7 @@ sub locate_function_calls {
     $size //= 10;
 
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             size  => $size,
             query => {
@@ -227,7 +227,7 @@ sub locate_method_calls {
     $size //= 10;
 
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             size  => $size,
             query => {
@@ -264,7 +264,7 @@ sub search_p5iq_index {
     my $es_query = P5iq::analyze_for_query( PPI::Document->new( \$query_string ) );
 
     my ($status, $res) = P5iq->es->search(
-        index => "p5iq",
+        index => P5iq::idx(),
         body  => {
             query => $es_query,
             size  => $size,

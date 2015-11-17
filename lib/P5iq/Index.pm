@@ -67,7 +67,7 @@ sub delete_by_file {
     state $es = es_object();
     my $file = shift;
     $es->delete(
-        index => "p5iq",
+        index => P5iq::idx(),
         command => "_query",
         body => { query => { term => { file => $file }}}
     );
@@ -77,7 +77,7 @@ sub index_these {
     state $es = es_object();
     my $features = shift;
     $es->bulk(
-        index => "p5iq",
+        index => P5iq::idx(),
         type  => "p5_node",
         body => [ map { ({index => {}}, $_) } @$features ]
     );

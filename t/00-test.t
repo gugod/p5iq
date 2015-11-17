@@ -8,6 +8,13 @@ use Capture::Tiny qw(capture);
 
 plan tests => 1;
 
+$ENV{P5IQ_INDEX} = "p5iq_$$";
+END {
+    P5iq::delete_all();
+}
+
+diag "P5IQ_INDEX: $ENV{P5IQ_INDEX}";
+
 use P5iq::Index;
 use P5iq::Search;
 

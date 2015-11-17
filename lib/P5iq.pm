@@ -4,6 +4,10 @@ use v5.14;
 use PPIx::LineToSub;
 use Elastijk;
 
+sub idx {
+    return $ENV{P5IQ_INDEX} // 'p5iq';
+}
+
 sub es {
     state $es = do {
         my ($es_host, $es_port) = ("localhost", "9200");
@@ -22,7 +26,7 @@ sub create_index_if_not_exist {
     my $es = es();
     unless ($es->exists( index => "p5iq" )) {
         my ($status, $res) = $es->put(
-            index => "p5iq",
+            index => idx(),
             body  => {
                 mappings => {
                     p5_node => {
@@ -223,6 +227,13 @@ sub analyze_for_query {
     };
 
     return $es_query;
+}
+
+sub delete_all {
+    my $es = es();
+    $es->delete(
+        index => idx(),
+    );
 }
 
 1;
