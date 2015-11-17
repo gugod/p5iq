@@ -1,3 +1,6 @@
+###Status
+[![Build Status](https://travis-ci.org/gugod/p5iq.png)](https://travis-ci.org/gugod/p5iq)
+
 # Configuration
 
 By default it requires an Elasticsearch instance running on 'localhost:9200'.
