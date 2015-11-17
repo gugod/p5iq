@@ -6,9 +6,9 @@ use warnings;
 use Test::More;
 use Test::Deep;
 use Capture::Tiny qw(capture);
-use LWP::Simple qw(get);
+#use LWP::Simple qw(get);
 
-plan tests => 2;
+plan tests => 3;
 
 $ENV{P5IQ_INDEX} = "p5iq_$$";
 END {
@@ -64,15 +64,139 @@ my $SCORE = re('^\d\.\d+$');
     ), '_locate_symbols unshift';
 }
 
-#my ($stdout, $stderr, $exit) = capture {
-#    P5iq::Search::locate_symbols('unshift', 10, 1, 0);
-#};
-#is $stdout, "lib/P5iq.pm:105: unshift\nlib/P5iq.pm:176: unshift\n";
-
 #diag get 'http://127.0.0.1:9200/_stats?pretty=1';
 #diag explain(P5iq->es->search( index => $ENV{P5IQ_INDEX}, body => { size => 5000 }));
 
-
 my $res = P5iq::Search::_search_p5iq_index('unshift');
-#diag explain $res;
+cmp_deeply $res, [
+   {
+     '_id' => $ID,
+     '_index' => $ENV{P5IQ_INDEX},
+     '_score' => $SCORE,
+     '_source' => {
+       'class' => 'PPI::Structure::Subscript',
+       'content' => '$args->location->[1]',
+       'file' => 't/corpus/lib/P5iq.pm',
+       'line_number' => 149,
+       'row_number' => 30,
+       'tags' => [
+         'subscript:symbol=$args',
+         'subscript:container=$args->location->',
+         'subscript:content=[1]'
+       ],
+       'token_class' => [
+         'PPI::Token::Symbol',
+         'PPI::Token::Operator',
+         'PPI::Token::Word',
+         'PPI::Token::Operator',
+         'PPI::Structure::Subscript'
+       ],
+       'token_content' => [
+         '$args',
+         '->',
+         'location',
+         '->',
+         '[1]'
+       ]
+     },
+     '_type' => 'p5_node'
+   },
+   {
+     '_id' => $ID,
+     '_index' => $ENV{P5IQ_INDEX},
+     '_score' => $SCORE,
+     '_source' => {
+       'class' => 'PPI::Structure::Subscript',
+       'content' => '$method->location->[0]',
+       'file' => 't/corpus/lib/P5iq.pm',
+       'line_number' => 190,
+       'row_number' => 30,
+       'tags' => [
+         'subscript:symbol=$method',
+         'subscript:container=$method->location->',
+         'subscript:content=[0]'
+       ],
+       'token_class' => [
+         'PPI::Token::Symbol',
+         'PPI::Token::Operator',
+         'PPI::Token::Word',
+         'PPI::Token::Operator',
+         'PPI::Structure::Subscript'
+       ],
+       'token_content' => [
+         '$method',
+         '->',
+         'location',
+         '->',
+         '[0]'
+       ]
+     },
+     '_type' => 'p5_node'
+   },
+   {
+     '_id' => $ID,
+     '_index' => $ENV{P5IQ_INDEX},
+     '_score' => $SCORE,
+     '_source' => {
+       'class' => 'PPI::Structure::Subscript',
+       'content' => '$s->location->[0]',
+       'file' => 't/corpus/lib/P5iq.pm',
+       'line_number' => 148,
+       'row_number' => 30,
+       'tags' => [
+         'subscript:symbol=$s',
+         'subscript:container=$s->location->',
+         'subscript:content=[0]'
+       ],
+       'token_class' => [
+         'PPI::Token::Symbol',
+         'PPI::Token::Operator',
+         'PPI::Token::Word',
+         'PPI::Token::Operator',
+         'PPI::Structure::Subscript'
+       ],
+       'token_content' => [
+         '$s',
+         '->',
+         'location',
+         '->',
+         '[0]'
+       ]
+     },
+     '_type' => 'p5_node'
+   },
+   {
+     '_id' => $ID,
+     '_index' => $ENV{P5IQ_INDEX},
+     '_score' => $SCORE,
+     '_source' => {
+       'class' => 'PPI::Structure::Subscript',
+       'content' => '$method->location->[1]',
+       'file' => 't/corpus/lib/P5iq.pm',
+       'line_number' => 191,
+       'row_number' => 30,
+       'tags' => [
+         'subscript:symbol=$method',
+         'subscript:container=$method->location->',
+         'subscript:content=[1]'
+       ],
+       'token_class' => [
+         'PPI::Token::Symbol',
+         'PPI::Token::Operator',
+         'PPI::Token::Word',
+         'PPI::Token::Operator',
+         'PPI::Structure::Subscript'
+       ],
+       'token_content' => [
+         '$method',
+         '->',
+         'location',
+         '->',
+         '[1]'
+       ]
+     },
+     '_type' => 'p5_node'
+   }
+], 'search';
+
 
