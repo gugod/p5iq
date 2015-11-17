@@ -8,6 +8,9 @@ perl:
   - "5.18"
   - "5.16"
   - "5.14"
+before_install:
+  - cpanm --notest Test::Deep
+  - cpanm --notest Test::Code::TidyAll 
 services:
   - elasticsearch
 script:
