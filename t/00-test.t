@@ -27,7 +27,7 @@ is P5iq::idx(), $ENV{P5IQ_INDEX}, 'idx() as expected';
 #diag get 'http://127.0.0.1:9200/_stats?pretty=1';
 system $^X, 'bin/p5iq-index', 't/corpus';
 sleep 4; # TODO: It seems after the index script finished we still have to wait for the indexing to really be done
-my $ID = re('^[\w-]{22,}$');
+my $ID = re('^[\w-]{20,}$');
 my $SCORE = re('^\d\.\d+$');
 
 {
