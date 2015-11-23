@@ -140,7 +140,6 @@ sub locate_hash_name {
 
 sub locate_var_def {
     my ($query_string, $size) = @_;
-    say "size= $size";
     my ($status, $res) = P5iq->es->search(
         index => P5iq::idx(),
         body  => {
