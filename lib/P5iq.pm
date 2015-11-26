@@ -204,7 +204,8 @@ sub extract_method_calls {
 sub extract_subroutine {
     my ($ppi_doc) = @_;
     my @doc;
-    my $sub_nodes = $ppi_doc->find( sub { $_[1]->isa('PPI::Statement::Sub') and $_[1]->name });
+    my $sub_nodes = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement::Sub') and $_[1]->name });
+    return () unles $sub_nodes;
     for my $el (@$sub_nodes) {
         push @doc, {
             line_number   => $el->location->[0],
