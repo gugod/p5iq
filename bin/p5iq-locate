@@ -30,9 +30,6 @@ if( $args{'hash-keys'} ){
 elsif( $args{'hash-name'} ){
     P5iq::Search::locate_hash_name($query_string, $args{size});
 }
-elsif( $args{'var-def'} ){
-    P5iq::Search::locate_var_def($query_string, $args{size});
-}
 elsif ($args{'arglist'}) {
     P5iq::Search::locate_arglist($query_string, $args{size});
 }

@@ -149,32 +149,6 @@ sub locate_hash_name {
     }
 }
 
-sub locate_var_def {
-    my ($query_string, $size) = @_;
-    my ($status, $res) = P5iq->es->search(
-        index => P5iq::idx(),
-        body  => {
-            size => $size,
-            query => {
-                bool => {
-                    must => [
-                        +{ term => { content => "$query_string" } },
-                        +{ term => { tags => "in:statement:variable:defined" } }
-                    ]
-                }
-            }
-        }
-    );
-    if ($status eq '200') {
-        for (@{ $res->{hits}{hits} }) {
-            my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number});
-        }
-    } else {
-        say "Query Error: " . to_json($res);
-    }
-}
-
 sub locate_arglist {
     my ($query_string, $size) = @_;
     $size //= 10;
@@ -286,6 +260,7 @@ sub locate_variable {
         );
     } else {
         push @conditions, (
+            (defined($args->{def})    ? { term => { tags => "in:statement:variable:defined" } } :()),
             (defined($args->{lvalue}) ? { term => { tags => "variable:lvalue" }} : ()),
             (defined($args->{rvalue}) ? { term => { tags => "variable:rvalue" }} : ()),
             (defined($query_string)   ? { term => { tags => "symbol:actual=${query_string}" } } :()),

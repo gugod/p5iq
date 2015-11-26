@@ -15,6 +15,7 @@ GetOptions(
     \%args,
     "size=i",
     "in=s",
+    "def",
     "lvalue",
     "rvalue",
     "in-string",
