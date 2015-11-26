@@ -17,6 +17,7 @@ GetOptions(
     "in=s",
     "lvalue",
     "rvalue",
+    "in-string",
 );
 
 my $query_string = shift // die "Need a query string...";

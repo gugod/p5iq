@@ -294,21 +294,33 @@ sub _search_p5iq_index {
 
 sub locate_variable {
     my ($args, $query_string) = @_;
+
+    my @conditions = (
+        (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ())
+    );
+
+    if ($args->{"in-string"}) {
+        push @conditions, (
+            { prefix => { class => "PPI::Token::Quote" } },
+            { regexp => { content => ".*\Q${query_string}\E.*" } },
+        );
+    } else {
+        push @conditions, (
+            (defined($args->{lvalue}) ? { term => { tags => "variable:lvalue" }} : ()),
+            (defined($args->{rvalue}) ? { term => { tags => "variable:rvalue" }} : ()),
+            +{ term => { tags => "symbol:actual=${query_string}" } },
+            +{ term => { tags => "in:statement:variable" } },
+        );
+    }
+
+    use Data::Dumper;
+    print STDERR Data::Dumper::Dumper(\@conditions);
+
     my ($status, $res) = P5iq->es->search(
         index => P5iq::idx(),
         body  => {
-            size => $args->{size} // 25,
-            query => {
-                bool => {
-                    must => [
-                        (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ()),
-                        (defined($args->{lvalue}) ? { term => { tags => "variable:lvalue" }} : ()),
-                        (defined($args->{rvalue}) ? { term => { tags => "variable:rvalue" }} : ()),
-                        +{ term => { tags => "symbol:actual=${query_string}" } },
-                        +{ term => { tags => "in:statement:variable" } },
-                    ]
-                }
-            }
+            size  => $args->{size} // 25,
+            query => { bool => { must => \@conditions } }
         }
     );
     if ($status eq '200') {
