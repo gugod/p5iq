@@ -323,5 +323,32 @@ sub locate_function {
     }, $cb);
 }
 
+sub frequency_hash_keys {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        { term => { tags => "subscript:symbol=$query_string" } },
+        (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ())
+    );
+
+    es_search({
+        body  => {
+            size  => $args->{size} // 25,
+            query => {
+                bool => { must => \@conditions }
+            },
+            aggregations => {
+                hash_keys => {
+                    terms => {
+                        field => "tags",
+                        include => ".*content.*",
+                        exclude => ".*]",
+                        size => 0,
+                    }                    
+                }
+            }
+        }
+    }, $cb);    
+}
 
 1;
