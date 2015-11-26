@@ -313,9 +313,6 @@ sub locate_variable {
         );
     }
 
-    use Data::Dumper;
-    print STDERR Data::Dumper::Dumper(\@conditions);
-
     my ($status, $res) = P5iq->es->search(
         index => P5iq::idx(),
         body  => {
