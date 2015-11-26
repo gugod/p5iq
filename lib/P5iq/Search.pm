@@ -247,7 +247,7 @@ sub _search_p5iq_index {
 }
 
 sub locate_variable {
-    my ($args, $query_string) = @_;
+    my ($args, $query_string, $cb) = @_;
 
     my @conditions = (
         (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ())
@@ -273,13 +273,7 @@ sub locate_variable {
             size  => $args->{size} // 25,
             query => { bool => { must => \@conditions } }
         }
-    }, sub {
-        my $res = shift;
-        for (@{ $res->{hits}{hits} }) {
-            my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number}, $src->{content});
-        }
-    });
+    }, $cb);
 }
 
 sub locate_value {
