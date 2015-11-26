@@ -1,0 +1,23 @@
+#!/usr/bin/env perl
+use v5.14;
+use warnings;
+
+use FindBin;
+use lib "${FindBin::Bin}/../local/lib/perl5";
+use lib "${FindBin::Bin}/../lib";
+
+use P5iq::Search;
+
+use Getopt::Long;
+
+my %args;
+GetOptions(
+    \%args,
+    "s|size=i",
+    "lvalue",
+    "rvalue",
+);
+
+my $query_string = shift // die "Need a query string...";
+
+P5iq::Search::locate_variable(\%args, $query_string);

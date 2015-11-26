@@ -292,5 +292,31 @@ sub _search_p5iq_index {
     }
 }
 
+sub locate_variable {
+    my ($args, $query_string) = @_;
+    my ($status, $res) = P5iq->es->search(
+        index => P5iq::idx(),
+        body  => {
+            size => $args->{size} // 10,
+            query => {
+                bool => {
+                    must => [
+                        +{ term => { content => "$query_string" } },
+                        +{ term => { tags => "in:statement:variable:defined" } }
+                    ]
+                }
+            }
+        }
+    );
+    if ($status eq '200') {
+        for (@{ $res->{hits}{hits} }) {
+            my $src =$_->{_source};
+            say join(":", $src->{file}, $src->{line_number});
+        }
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
 
 1;
