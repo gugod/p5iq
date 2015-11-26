@@ -244,8 +244,7 @@ sub locate_method_calls {
     my ($query_string, $size) = @_;
     $size //= 10;
 
-    my ($status, $res) = P5iq->es->search(
-        index => P5iq::idx(),
+    es_search({
         body  => {
             size  => $size,
             query => {
@@ -266,13 +265,11 @@ sub locate_method_calls {
                 },
             }
         }
-    );
-    if ($status eq '200') {
+    }, sub {
+        my $res = shift;
         my @keys = map{ $_->{key} = substr($_->{key},15); $_->{key} } @{ $res->{aggregations}{method_context}{buckets} };
         say join("\n", @keys);
-    } else {
-        say "Query Error: " . to_json($res);
-    }
+    });
 }
 
 sub search_p5iq_index {
