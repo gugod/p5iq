@@ -201,6 +201,24 @@ sub extract_method_calls {
     return @doc;
 }
 
+sub extract_subroutine {
+    my ($ppi_doc) = @_;
+    my @doc;
+    my $sub_nodes = $ppi_doc->find( sub { $_[1]->isa('PPI::Statement::Sub') and $_[1]->name });
+    for my $el (@$sub_nodes) {
+        push @doc, {
+            line_number   => $el->location->[0],
+            row_number    => $el->location->[1],
+            class         => 'P5iq::Subroutine',
+            tags          => [
+                "subroutine:def",
+                "subroutine:name=" . $el->name,
+            ]
+        }
+    }
+    return @doc;
+}
+
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
@@ -209,6 +227,7 @@ sub analyze_for_index {
     my @doc;
     push @doc, extract_token($ppi_doc);
     push @doc, extract_subscript($ppi_doc);
+    push @doc, extract_subroutine($ppi_doc);
     push @doc, extract_function_calls($ppi_doc);
     push @doc, extract_method_calls($ppi_doc);
     return @doc;
