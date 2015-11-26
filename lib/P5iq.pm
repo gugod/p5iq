@@ -210,6 +210,7 @@ sub extract_subroutine {
             line_number   => $el->location->[0],
             row_number    => $el->location->[1],
             class         => 'P5iq::Subroutine',
+            content       => $el->name,
             tags          => [
                 "subroutine:def",
                 "subroutine:name=" . $el->name,

@@ -15,6 +15,7 @@ GetOptions(
     \%args,
     "size=i",
     "in=s",
+    "call",
 );
 
 my $query_string = shift;

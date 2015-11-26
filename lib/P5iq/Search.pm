@@ -337,23 +337,31 @@ sub locate_value {
 sub locate_function {
     my ($args, $query_string) = @_;
 
+    my @conditions;
+    if ($args->{call}) {
+        push @conditions, (
+            { term => { tags => "function:call" } },
+            (defined($query_string) ? { term => { tags => "function:name=$query_string" } } : ())
+        );
+    } else {
+        push @conditions, (
+            { term => { tags => "subroutine:def" } },
+            (defined($query_string) ? { term => { tags => "subroutine:name=$query_string" } } : ())
+        );
+    }
+
     es_search({
         body  => {
             size  => $args->{size} // 25,
             query => {
-                bool => {
-                    must => [
-                        +{ term => { tags => "function:call" } },
-                        +{ term => { tags => "function:name=$query_string" } },
-                    ]
-                },
+                bool => { must => \@conditions }
             }
         }
     }, sub {
         my $res = shift;
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number}, $src->{row_number});
+            say join(":", $src->{file}, $src->{line_number}, $src->{row_number}, $src->{content});
         }
     });
 }
