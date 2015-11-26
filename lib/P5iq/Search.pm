@@ -6,6 +6,17 @@ use P5iq;
 use PPI;
 use JSON qw(to_json);
 
+sub es_search {
+    my ($search_param, $cb) = @_;
+    $search_param->{index} //= P5iq::idx();
+    my ($status, $res) = P5iq->es->search(%$search_param);
+    if ($status eq '200') {
+        $cb->($res);
+    } else {
+        say "Query Error: " . to_json($res);
+    }
+}
+
 sub locate_symbols {
     my ($query_string, $size, $symbol, $sub_named) = @_;
     my $res = _locate_symbols($query_string, $size, $symbol, $sub_named);
@@ -328,6 +339,33 @@ sub locate_variable {
     } else {
         say "Query Error: " . to_json($res);
     }
+}
+
+sub locate_value {
+    my ($args, $query_string) = @_;
+    my @conditions = (
+        (defined($args->{in})   ? { prefix => { file => $args->{in}  } }   : ()),
+        (defined($query_string) ? { regexp => { content => ".*\Q${query_string}\E.*" } } :()),
+    );
+
+    es_search({
+        body  => {
+            size  => $args->{size} // 25,
+            query => { bool => {
+                should => [
+                    +{ prefix => { class => "PPI::Token::Number" } },
+                    +{ prefix => { class => "PPI::Token::Quote" }  }
+                ],
+                must => \@conditions
+            } }
+        }
+    }, sub {
+        my $res = shift;
+        for (@{ $res->{hits}{hits} }) {
+            my $src =$_->{_source};
+            say join(":", $src->{file}, $src->{line_number}, $src->{content});
+        }
+    });
 }
 
 
