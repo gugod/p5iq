@@ -301,8 +301,11 @@ sub locate_variable {
             query => {
                 bool => {
                     must => [
+                        (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ()),
+                        (defined($args->{lvalue}) ? { term => { tags => "variable:lvalue" }} : ()),
+                        (defined($args->{rvalue}) ? { term => { tags => "variable:rvalue" }} : ()),
                         +{ term => { tags => "symbol:actual=${query_string}" } },
-                        +{ term => { tags => "in:statement:variable:defined" } }
+                        +{ term => { tags => "in:statement:variable" } },
                     ]
                 }
             }
