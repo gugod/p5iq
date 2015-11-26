@@ -310,7 +310,7 @@ sub locate_value {
 }
 
 sub locate_function {
-    my ($args, $query_string) = @_;
+    my ($args, $query_string, $cb) = @_;
 
     my @conditions;
     if ($args->{call}) {
@@ -332,13 +332,7 @@ sub locate_function {
                 bool => { must => \@conditions }
             }
         }
-    }, sub {
-        my $res = shift;
-        for (@{ $res->{hits}{hits} }) {
-            my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number}, $src->{row_number}, $src->{content});
-        }
-    });
+    }, $cb);
 }
 
 
