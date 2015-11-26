@@ -212,34 +212,6 @@ sub locate_arglist {
 
 }
 
-sub locate_function_calls {
-    my ($query_string, $size) = @_;
-    $size //= 10;
-
-    my ($status, $res) = P5iq->es->search(
-        index => P5iq::idx(),
-        body  => {
-            size  => $size,
-            query => {
-                bool => {
-                    must => [
-                        +{ term => { tags => "function:call" } },
-                        +{ term => { tags => "function:name=$query_string" } },
-                    ]
-                },
-            }
-        }
-    );
-    if ($status eq '200') {
-        for (@{ $res->{hits}{hits} }) {
-            my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number}, $src->{row_number});
-        }
-    } else {
-        say "Query Error: " . to_json($res);
-    }
-}
-
 sub locate_method_calls {
     my ($query_string, $size) = @_;
     $size //= 10;
@@ -358,6 +330,30 @@ sub locate_value {
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
             say join(":", $src->{file}, $src->{line_number}, $src->{content});
+        }
+    });
+}
+
+sub locate_function {
+    my ($args, $query_string) = @_;
+
+    es_search({
+        body  => {
+            size  => $args->{size} // 25,
+            query => {
+                bool => {
+                    must => [
+                        +{ term => { tags => "function:call" } },
+                        +{ term => { tags => "function:name=$query_string" } },
+                    ]
+                },
+            }
+        }
+    }, sub {
+        my $res = shift;
+        for (@{ $res->{hits}{hits} }) {
+            my $src =$_->{_source};
+            say join(":", $src->{file}, $src->{line_number}, $src->{row_number});
         }
     });
 }

@@ -20,7 +20,6 @@ GetOptions(
     "hash-name",
     "var-def",
     "arglist",
-    "fun-call",
     "whohas",
 );
 
@@ -36,9 +35,6 @@ elsif( $args{'var-def'} ){
 }
 elsif ($args{'arglist'}) {
     P5iq::Search::locate_arglist($query_string, $args{size});
-}
-elsif ($args{'fun-call'}) {
-    P5iq::Search::locate_function_calls($query_string, $args{size});
 }
 elsif ($args{'whohas'}) {
     P5iq::Search::locate_method_calls($query_string, $args{size});
