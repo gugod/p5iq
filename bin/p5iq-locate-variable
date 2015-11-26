@@ -20,7 +20,7 @@ GetOptions(
     "in-string",
 );
 
-my $query_string = shift // die "Need a query string...";
+my $query_string = shift;
 
 $args{size} //= (($ENV{LINES} || 27)- 2);
 

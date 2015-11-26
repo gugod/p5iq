@@ -310,13 +310,13 @@ sub locate_variable {
     if ($args->{"in-string"}) {
         push @conditions, (
             { prefix => { class => "PPI::Token::Quote" } },
-            { regexp => { content => ".*\Q${query_string}\E.*" } },
+            (define($query_string) ? { regexp => { content => ".*\Q${query_string}\E.*" } } : ()),
         );
     } else {
         push @conditions, (
             (defined($args->{lvalue}) ? { term => { tags => "variable:lvalue" }} : ()),
             (defined($args->{rvalue}) ? { term => { tags => "variable:rvalue" }} : ()),
-            +{ term => { tags => "symbol:actual=${query_string}" } },
+            (defined($query_string)   ? { term => { tags => "symbol:actual=${query_string}" } } :()),
             +{ term => { tags => "in:statement:variable" } },
         );
     }
@@ -330,7 +330,7 @@ sub locate_variable {
         my $res = shift;
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number});
+            say join(":", $src->{file}, $src->{line_number}, $src->{content});
         }
     });
 }
