@@ -85,12 +85,12 @@ sub extract_token {
                     push @{$doc->{tags}}, 'in:statement:variable:defined';
                 }
                 if ($next_op->content =~ /=/ ) { # += -= ~= //= ||=
-                    push @{$doc->{tags}}, 'in:statement:variable:lvalue';
+                    push @{$doc->{tags}}, 'variable:lvalue';
                 }
             }
             if ($prev_op) {
                 if ($prev_op->content =~ /=/ ) { # += -= ~= //= ||= =
-                    push @{$doc->{tags}}, 'in:statement:variable:rvalue';
+                    push @{$doc->{tags}}, 'variable:rvalue';
                 }
             }
         }
