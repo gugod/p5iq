@@ -301,7 +301,7 @@ sub locate_variable {
             query => {
                 bool => {
                     must => [
-                        +{ term => { content => "$query_string" } },
+                        +{ term => { tags => "symbol:actual=${query_string}" } },
                         +{ term => { tags => "in:statement:variable:defined" } }
                     ]
                 }

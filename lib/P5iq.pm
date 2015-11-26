@@ -65,33 +65,32 @@ sub extract_token {
                 'symbol:actual='    . $x->symbol,
                 'symbol:canonical=' . $x->canonical
             );
+
+            my ($next_op, $prev_op);
             if ( ref(my $x_parent = $x->parent) eq 'PPI::Statement::Variable' ) {
-                push @{$doc->{tags}}, (
-                    'in:statement:variable'
-                );
-                my $ns = $x->snext_sibling;
-                if( ref($ns) eq 'PPI::Token::Operator' && $ns->content eq '=' ){
-                    push @{$doc->{tags}}, (
-                        'in:statement:variable:defined'
-                    );
+                push @{$doc->{tags}}, 'in:statement:variable';
+                $next_op = $_ if ref($_ = $x->snext_sibling) eq 'PPI::Token::Operator';
+                $prev_op = $_ if ref($_ = $x->sprevious_sibling) eq 'PPI::Token::Operator';
+            }
+            # Look for var definition like: my ($a, $b) = @_
+            elsif ( ref($x->parent) eq 'PPI::Statement::Expression'
+                && ref($x->parent->parent) eq 'PPI::Structure::List'
+                && ref($x->parent->parent->parent) eq 'PPI::Statement::Variable') {
+                push @{$doc->{tags}}, 'in:statement:variable';
+                $next_op = $_ if ref($_ = $x->snext_sibling) eq 'PPI::Token::Operator';
+                $prev_op = $_ if ref($_ = $x->sprevious_sibling) eq 'PPI::Token::Operator';
+            }
+            if ($next_op) {
+                if ($next_op->content eq '=' ) {
+                    push @{$doc->{tags}}, 'in:statement:variable:defined';
+                }
+                if ($next_op->content =~ /=/ ) { # += -= ~= //= ||=
+                    push @{$doc->{tags}}, 'in:statement:variable:lvalue';
                 }
             }
-
-            #Look for var definition like: my ($a, $b) = @_
-            if( ref($x->parent) eq 'PPI::Statement::Expression'
-                && ref($x->parent->parent) eq 'PPI::Structure::List'
-                && ref($x->parent->parent->parent) eq 'PPI::Statement::Variable'
-            ){
-                push @{$doc->{tags}}, (
-                    'in:statement:variable'
-                );
-
-                if( ref($x->parent->parent->snext_sibling) eq 'PPI::Token::Operator'
-                    && $x->parent->parent->snext_sibling->content eq '='
-                ){
-                    push @{$doc->{tags}}, (
-                        'in:statement:variable:defined'
-                    );
+            if ($prev_op) {
+                if ($prev_op->content =~ /=/ ) { # += -= ~= //= ||= =
+                    push @{$doc->{tags}}, 'in:statement:variable:rvalue';
                 }
             }
         }
