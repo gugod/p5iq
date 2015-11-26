@@ -324,21 +324,18 @@ sub locate_variable {
         );
     }
 
-    my ($status, $res) = P5iq->es->search(
-        index => P5iq::idx(),
+    es_search({
         body  => {
             size  => $args->{size} // 25,
             query => { bool => { must => \@conditions } }
         }
-    );
-    if ($status eq '200') {
+    }, sub {
+        my $res = shift;
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
             say join(":", $src->{file}, $src->{line_number});
         }
-    } else {
-        say "Query Error: " . to_json($res);
-    }
+    });
 }
 
 sub locate_value {
