@@ -13,12 +13,14 @@ use Getopt::Long;
 my %args;
 GetOptions(
     \%args,
-    "s|size=i",
+    "size=i",
     "in=s",
     "lvalue",
     "rvalue",
 );
 
 my $query_string = shift // die "Need a query string...";
+
+$args{size} //= (($ENV{LINES} || 27)- 2);
 
 P5iq::Search::locate_variable(\%args, $query_string);

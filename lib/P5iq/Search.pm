@@ -297,7 +297,7 @@ sub locate_variable {
     my ($status, $res) = P5iq->es->search(
         index => P5iq::idx(),
         body  => {
-            size => $args->{size} // 10,
+            size => $args->{size} // 25,
             query => {
                 bool => {
                     must => [
