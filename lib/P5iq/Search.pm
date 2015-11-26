@@ -283,7 +283,7 @@ sub locate_variable {
 }
 
 sub locate_value {
-    my ($args, $query_string) = @_;
+    my ($args, $query_string, $cb) = @_;
     my @conditions = (
         (defined($args->{in})   ? { prefix => { file => $args->{in}  } }   : ()),
         (defined($query_string) ? { regexp => { content => ".*\Q${query_string}\E.*" } } :()),
@@ -300,13 +300,7 @@ sub locate_value {
                 must => \@conditions
             } }
         }
-    }, sub {
-        my $res = shift;
-        for (@{ $res->{hits}{hits} }) {
-            my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{line_number}, $src->{content});
-        }
-    });
+    }, $cb);
 }
 
 sub locate_function {

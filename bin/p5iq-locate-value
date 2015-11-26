@@ -21,4 +21,13 @@ my $query_string = shift;
 
 $args{size} //= (($ENV{LINES} || 27)- 2);
 
-P5iq::Search::locate_value(\%args, $query_string);
+P5iq::Search::locate_value(
+    \%args, $query_string,
+    sub {
+        my $res = shift;
+        for (@{ $res->{hits}{hits} }) {
+            my $src =$_->{_source};
+            say join(":", $src->{file}, $src->{line_number}, $src->{content});
+        }
+    }
+);
