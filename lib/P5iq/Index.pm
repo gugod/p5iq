@@ -41,17 +41,18 @@ sub index_perl_source_code {
     my ($args, $file) = @_;
     my $ppi_doc = PPI::Document->new($file) or return;
 
-    my @features = P5iq::analyze_for_index($ppi_doc);
+    my $features = P5iq::analyze_for_index($ppi_doc);
 
     $args->{project} //= "";
-    for (@features) {
-        $_->{file} = $file;
-        $_->{project} = $args->{project};
+    for my $type (keys %$features) {
+        for (@{ $features->{$type} }) {
+            $_->{file} = $file;
+            $_->{project} = $args->{project};
+        }
+        say "[$$] index\t$file\t" . scalar(@{ $features->{$type} }) . " $type features";
     }
-    say "[$$] index\t$file\t" . scalar(@features) . " features";
-
     delete_by_file($file);
-    index_these(\@features);
+    index_these($features);
 }
 
 sub es_object {
@@ -78,11 +79,13 @@ sub delete_by_file {
 sub index_these {
     state $es = es_object();
     my $features = shift;
-    $es->bulk(
-        index => P5iq::idx(),
-        type  => "p5_node",
-        body => [ map { ({index => {}}, $_) } @$features ]
-    );
+    for my $type (keys %$features) {
+        $es->bulk(
+            index => P5iq::idx(),
+            type  => $type,
+            body => [ map { ({index => {}}, $_) } @{$features->{$type}} ]
+        );
+    }
 }
 
 sub index_dirs {

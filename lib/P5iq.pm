@@ -42,6 +42,16 @@ sub create_index_if_not_exist {
                             tags          => { "type" => "string","index" => "not_analyzed" },
                         }
                     },
+                    p5_statement => {
+                        properties => {
+                            project       => { "type" => "string", "index" => "not_analyzed" },
+                            file          => { "type" => "string", "index" => "not_analyzed" },
+                            line_number   => { "type" => "integer" },
+                            token_content => { "type" => "string" },
+                            token_class   => { "type" => "string","index" => "not_analyzed" },
+                            tags          => { "type" => "string","index" => "not_analyzed" },
+                        }
+                    }
                 }
             }
         );
@@ -265,7 +275,10 @@ sub analyze_for_index {
     push @doc, extract_function_calls($ppi_doc);
     push @doc, extract_method_calls($ppi_doc);
     push @doc, extract_package($ppi_doc);
-    return @doc;
+
+    return {
+        p5_node => \@doc
+    }
 }
 
 sub analyze_for_query {
