@@ -414,4 +414,30 @@ sub frequency_token {
     }, $cb);
 }
 
+sub frequency_token_class {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        { prefix => { "class" => "PPI::Token" } },
+        (defined($args->{in})   ? { prefix => { file => $args->{in}  } }     : ())
+    );
+
+    es_search({
+        body  => {
+            size  => 0,
+            query => {
+                constant_score => { filter => { and => \@conditions } }
+            },
+            aggregations => {
+                token_class => {
+                    terms => {
+                        field => "class",
+                        size  => $args->{size} // 25,
+                    }
+                }
+            }
+        }
+    }, $cb);
+}
+
 1;
