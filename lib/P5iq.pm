@@ -47,6 +47,7 @@ sub create_index_if_not_exist {
                             project       => { "type" => "string", "index" => "not_analyzed" },
                             file          => { "type" => "string", "index" => "not_analyzed" },
                             line_number   => { "type" => "integer" },
+                            class         => { "type" => "string", "index" => "not_analyzed" },
                             token_content => { "type" => "string" },
                             token_class   => { "type" => "string","index" => "not_analyzed" },
                             tags          => { "type" => "string","index" => "not_analyzed" },
@@ -263,6 +264,23 @@ sub extract_package {
     return @doc;
 }
 
+sub extract_statements {
+    my ($ppi_doc) = @_;
+    my @doc;
+    my $statements = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement') });
+    for my $s (@$statements) {
+        my $location = $s->location;
+        my @tokens = grep { $_->significant } $s->tokens;
+        push @doc, {
+            line_number => $location->[0],
+            class         => $s->class,
+            token_content => [ map { $_->content } @tokens ],
+            token_class   => [ map { $_->class   } @tokens ],
+        };
+    }
+    return @doc;
+}
+
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
@@ -276,6 +294,9 @@ sub analyze_for_index {
             extract_function_calls($ppi_doc),
             extract_method_calls($ppi_doc),
             extract_package($ppi_doc),
+        ],
+        p5_statement => [
+            extract_statements($ppi_doc)
         ]
     }
 }
