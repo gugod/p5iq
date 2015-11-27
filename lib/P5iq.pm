@@ -227,6 +227,26 @@ sub extract_subroutine {
     return @doc;
 }
 
+sub extract_package {
+    my ($ppi_doc) = @_;
+    my @doc;
+    my $sub_nodes = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement::Package') });
+    return () unless $sub_nodes;
+    for my $el (@$sub_nodes) {
+        push @doc, {
+            line_number   => $el->location->[0],
+            row_number    => $el->location->[1],
+            class         => 'P5iq::Package',
+            content       => $el->namespace,
+            tags          => [
+                "package:def",
+                "package:name=" . $el->namespace,
+            ]
+        }
+    }
+    return @doc;
+}
+
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
@@ -238,6 +258,7 @@ sub analyze_for_index {
     push @doc, extract_subroutine($ppi_doc);
     push @doc, extract_function_calls($ppi_doc);
     push @doc, extract_method_calls($ppi_doc);
+    push @doc, extract_package($ppi_doc);
     return @doc;
 }
 
