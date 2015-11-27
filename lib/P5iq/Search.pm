@@ -233,17 +233,15 @@ sub locate_value {
 sub locate_sub {
     my ($args, $query_string, $cb) = @_;
 
-    my @conditions;
+    my @conditions = (
+        (defined($query_string) ? { term => { tags => "subroutine:name=$query_string" } } : ()),
+        (defined($args->{in})   ? { prefix => { file => $args->{in}  } }   : ()),
+    );
+
     if ($args->{call}) {
-        push @conditions, (
-            { term => { tags => "function:call" } },
-            (defined($query_string) ? { term => { tags => "function:name=$query_string" } } : ())
-        );
+        push @conditions, { term => { tags => "subroutine:call" } };
     } else {
-        push @conditions, (
-            { term => { tags => "subroutine:def" } },
-            (defined($query_string) ? { term => { tags => "subroutine:name=$query_string" } } : ())
-        );
+        push @conditions, { term => { tags => "subroutine:def" } };
     }
 
     es_search({
