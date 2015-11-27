@@ -38,13 +38,15 @@ sub scan_this_dir {
 }
 
 sub index_perl_source_code {
-    my ($file) = @_;
+    my ($args, $file) = @_;
     my $ppi_doc = PPI::Document->new($file) or return;
 
     my @features = P5iq::analyze_for_index($ppi_doc);
 
+    $args->{project} //= "";
     for (@features) {
         $_->{file} = $file;
+        $_->{project} = $args->{project};
     }
     say "[$$] index\t$file\t" . scalar(@features) . " features";
 
@@ -84,10 +86,15 @@ sub index_these {
 }
 
 sub index_dirs {
-    my (@dirs) = @_;
+    my ($args, @dirs) = @_;
 
     for my $srcdir (@dirs) {
-        scan_this_dir($srcdir, \&index_perl_source_code );
+        scan_this_dir(
+            $srcdir,
+            sub {
+                index_perl_source_code($args, $_[0]);
+            }
+        );
     }
 }
 
