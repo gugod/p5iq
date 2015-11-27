@@ -31,6 +31,7 @@ sub create_index_if_not_exist {
                 mappings => {
                     p5_node => {
                         properties => {
+                            project       => { "type" => "string", "index" => "not_analyzed" },
                             file          => { "type" => "string", "index" => "not_analyzed" },
                             line_number   => { "type" => "integer" },
                             row_number    => { "type" => "integer" },
