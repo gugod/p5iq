@@ -240,6 +240,10 @@ sub locate_sub {
 
     if ($args->{call}) {
         push @conditions, { term => { tags => "subroutine:call" } };
+    } elsif ($args->{function}) {
+        push @conditions, { term => { tags => "function:call" } };
+    } elsif ($args->{method}) {
+        push @conditions, { term => { tags => "method:call" } };
     } else {
         push @conditions, { term => { tags => "subroutine:def" } };
     }
