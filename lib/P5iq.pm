@@ -268,16 +268,15 @@ sub analyze_for_index {
 
     $ppi_doc->index_line_to_sub;
 
-    my @doc;
-    push @doc, extract_token($ppi_doc);
-    push @doc, extract_subscript($ppi_doc);
-    push @doc, extract_subroutine($ppi_doc);
-    push @doc, extract_function_calls($ppi_doc);
-    push @doc, extract_method_calls($ppi_doc);
-    push @doc, extract_package($ppi_doc);
-
     return {
-        p5_node => \@doc
+        p5_node => [
+            extract_token($ppi_doc),
+            extract_subscript($ppi_doc),
+            extract_subroutine($ppi_doc),
+            extract_function_calls($ppi_doc),
+            extract_method_calls($ppi_doc),
+            extract_package($ppi_doc),
+        ]
     }
 }
 
