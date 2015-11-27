@@ -144,6 +144,9 @@ sub extract_function_calls {
         my $args = $s->snext_sibling;
         next unless ref($args) eq 'PPI::Structure::List';
 
+        my (@ns) = split(/::/, "$s");
+        my $name = pop(@ns);
+        my $namespace = join("::", @ns);
         push @doc, {
             line_number   => $s->location->[0],
             row_number    => $args->location->[1],
@@ -151,7 +154,8 @@ sub extract_function_calls {
             class         => 'P5iq::FunctionCall',
             tags          => [
                 "subroutine:call",
-                "subroutine:name=$s",
+                "subroutine:name=$name",
+                "subroutine:namespace=$namespace",
                 "subroutine:arglist=$args",
                 "function:call",
                 "function:name=$s",
