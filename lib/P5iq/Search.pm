@@ -262,7 +262,7 @@ sub locate_value {
     }, $cb);
 }
 
-sub locate_function {
+sub locate_sub {
     my ($args, $query_string, $cb) = @_;
 
     my @conditions;
