@@ -382,4 +382,36 @@ sub frequency_values {
     }, $cb);
 }
 
+sub frequency_invocant {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        { term => { tags => "method:call" } },
+        (defined($query_string) ? { term => { tags => "method:name=$query_string" } } : ()),
+        (defined($args->{in})   ? { prefix => { file => $args->{in}  } }     : ())
+    );
+
+    es_search({
+        body  => {
+            size  => 0,
+            query => {
+                constant_score => {
+                    filter => {
+                        and => \@conditions
+                    }
+                }
+            },
+            aggregations => {
+                invocant => {
+                    terms => {
+                        field => "tags",
+                        include => "method:context=.*",
+                        size  => $args->{size} // 25,
+                    }
+                }
+            }
+        }
+    }, $cb);
+}
+
 1;
