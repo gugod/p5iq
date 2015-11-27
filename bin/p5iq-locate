@@ -30,9 +30,6 @@ if( $args{'hash-name'} ){
 elsif ($args{'arglist'}) {
     P5iq::Search::locate_arglist($query_string, $args{size});
 }
-elsif ($args{'whohas'}) {
-    P5iq::Search::locate_method_calls($query_string, $args{size});
-}
 else {
     P5iq::Search::locate_symbols($query_string, $args{size}, $args{symbol}, $args{'sub-named'}, $args{'hash-keys'});
 }

@@ -151,38 +151,6 @@ sub locate_arglist {
 
 }
 
-sub locate_method_calls {
-    my ($query_string, $size) = @_;
-    $size //= 10;
-
-    es_search({
-        body  => {
-            size  => $size,
-            query => {
-                bool => {
-                    must => [
-                        +{ term => { tags => "method:call" } },
-                        +{ term => { tags => "method:name=$query_string" } },
-                    ]
-                },
-            },
-            aggs => {
-                method_context => {
-                    terms => {
-                        size  => $size,
-                        field => "tags",
-                        include => "method:context=.*"
-                    }
-                },
-            }
-        }
-    }, sub {
-        my $res = shift;
-        my @keys = map{ $_->{key} = substr($_->{key},15); $_->{key} } @{ $res->{aggregations}{method_context}{buckets} };
-        say join("\n", @keys);
-    });
-}
-
 sub search_p5iq_index {
     my $res = _search_p5iq_index(@_);
     for (@{ $res }) {
