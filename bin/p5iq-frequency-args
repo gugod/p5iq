@@ -29,7 +29,7 @@ P5iq::Search::frequency_args(
     sub {
         my $res = shift;
         for (@{$res->{aggregations}{args}{buckets}}) {
-            my $k = substr($_->{key}, length('subscript::content=') - 1 );
+            my (undef,$k) = split("=", $_->{key}, 2);
             say "$_->{doc_count}\t$k";
         }
     });
