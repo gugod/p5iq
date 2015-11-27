@@ -326,7 +326,7 @@ sub frequency_values {
             query => {
                 constant_score => {
                     filter => {
-                        and => => [
+                        and => [
                             @conditions,
                             {
                                 or => [
