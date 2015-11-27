@@ -210,17 +210,18 @@ sub extract_method_calls {
 sub extract_subroutine {
     my ($ppi_doc) = @_;
     my @doc;
-    my $sub_nodes = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement::Sub') and $_[1]->name });
+    my $sub_nodes = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement::Sub') });
     return () unless $sub_nodes;
     for my $el (@$sub_nodes) {
+        my $n = $el->name;
         push @doc, {
             line_number   => $el->location->[0],
             row_number    => $el->location->[1],
             class         => 'P5iq::Subroutine',
-            content       => $el->name,
+            content       => $n // "",
             tags          => [
                 "subroutine:def",
-                "subroutine:name=" . $el->name,
+                (defined($n) ? "subroutine:name=$n" : "subroutine:unnamed")
             ]
         }
     }
