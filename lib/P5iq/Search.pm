@@ -344,4 +344,42 @@ sub frequency_args {
     }, $cb);
 }
 
+sub frequency_values {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        (defined($query_string) ? { term => { "content" => $query_string } } : ()),
+        (defined($args->{in})   ? { prefix => { file => $args->{in}  } }     : ())
+    );
+
+    es_search({
+        body  => {
+            size  => 0,
+            query => {
+                constant_score => {
+                    filter => {
+                        and => => [
+                            @conditions,
+                            {
+                                or => [
+                                    +{ prefix => { class => "PPI::Token::Number" } },
+                                    +{ prefix => { class => "PPI::Token::Quote" }  }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            aggregations => {
+                values => {
+                    terms => {
+                        field => "content",
+                        size  => $args->{size} // 25,
+                    }
+                }
+            }
+        }
+    }, $cb);
+}
+
 1;
