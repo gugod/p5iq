@@ -149,6 +149,9 @@ sub extract_function_calls {
             content       => join("", "$s", "$args"),
             class         => 'P5iq::FunctionCall',
             tags          => [
+                "subroutine:call",
+                "subroutine:name=$s",
+                "subroutine:arglist=$args",
                 "function:call",
                 "function:name=$s",
                 "function:arglist=$args"
@@ -191,6 +194,9 @@ sub extract_method_calls {
             content       => join("", "$context", "->", "$method", "$args"),
             class         => 'P5iq::MethodCall',
             tags          => [
+                "subroutine:call",
+                "subroutine:name=$method",
+                "subroutine:arglist=$args",
                 "method:call",
                 "method:name=$method",
                 "method:context=$context",
