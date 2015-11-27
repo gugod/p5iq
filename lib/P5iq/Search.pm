@@ -309,11 +309,39 @@ sub frequency_hash_keys {
                         include => ".*content.*",
                         exclude => ".*]",
                         size => 0,
-                    }                    
+                    }
                 }
             }
         }
-    }, $cb);    
+    }, $cb);
+}
+
+sub frequency_args {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        { term => { tags => "function:call" } },
+        { term => { tags => "function:name=$query_string" } },
+        (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ())
+    );
+
+    es_search({
+        body  => {
+            size  => $args->{size} // 25,
+            query => {
+                bool => { must => \@conditions }
+            },
+            aggregations => {
+                args => {
+                    terms => {
+                        field => "tags",
+                        include => "function:arglist=.*",
+                        size => 0,
+                    }
+                }
+            }
+        }
+    }, $cb);
 }
 
 1;
