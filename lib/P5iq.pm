@@ -281,6 +281,43 @@ sub extract_statements {
     return @doc;
 }
 
+sub extract_package_dependency {
+    my ($ppi_doc) = @_;
+
+    my $things = $ppi_doc->find(
+        sub {
+            my $el = pop;
+            return $el->isa('PPI::Statement::Package') || $el->isa('PPI::Statement::Include');
+        }
+    );
+
+    my %deps;
+    my $current_package = "main";
+    for (@$things) {
+        if ($_->isa('PPI::Statement::Package')) {
+            $current_package = $_->namespace;
+        } else {
+            push @{$deps{$current_package}}, $_;
+        }
+    }
+
+    my @doc;
+    for my $p (keys %deps) {
+        my @deps = ();
+        for (@{ $deps{$p} }) {
+            my $d = (grep { $_->isa("PPI::Token::Word") } $_->tokens)[1];
+            push @deps, $d->content if $d;
+        }
+        push @doc, {
+            class         => "P5iq::PackageDependency",
+            content       => $p,
+            token_content => \@deps,
+        };
+    }
+
+    return @doc;
+}
+
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
@@ -296,6 +333,7 @@ sub analyze_for_index {
             extract_package($ppi_doc),
         ],
         p5_statement => [
+            extract_package_dependency($ppi_doc),
             extract_statements($ppi_doc)
         ]
     }
