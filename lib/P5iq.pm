@@ -289,7 +289,7 @@ sub extract_package_dependency {
             my $el = pop;
             return $el->isa('PPI::Statement::Package') || $el->isa('PPI::Statement::Include');
         }
-    );
+    ) or return ();
 
     my %deps;
     my $current_package = "main";
