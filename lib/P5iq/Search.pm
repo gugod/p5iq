@@ -153,19 +153,12 @@ sub locate_arglist {
 sub search_with_query_string  {
     my ($args, $query_string, $cb) = @_;
     my $es_query = P5iq::analyze_for_query( PPI::Document->new( \$query_string ) );
-
-    my ($status, $res) = P5iq->es->search(
-        index => P5iq::idx(),
+    es_search({
         body  => {
             query => $es_query,
             size  => $args->{size},
         }
-    );
-    if ($status eq '200') {
-        $cb->($res);
-    } else {
-        say "Query Error: " . to_json($res);
-    }
+    }, $cb);
 }
 
 sub locate_variable {
