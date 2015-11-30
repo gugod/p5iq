@@ -10,9 +10,21 @@ use P5iq::Search;
 
 use Getopt::Long;
 
+my %args;
 GetOptions(
-    "s|size=i" => \(my $size)
+    \%args,
+    "s|size=i",
 );
-my $query = shift(@ARGV) or die "query required";
+my $query_string = shift(@ARGV) or die "query required";
 
-P5iq::Search::search_p5iq_index($query, $size);
+P5iq::Search::search_with_query_string(
+    \%args,
+    $query_string,
+    sub {
+        my $res = shift;
+        for (@{ $res->{hits}{hits} }) {
+            my $src =$_->{_source};
+            say join(":", $src->{file}, $src->{line_number}) . "\n" . $_->{_source}{content} . "\n";
+        }
+    }
+);

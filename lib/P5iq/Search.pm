@@ -148,32 +148,21 @@ sub locate_arglist {
     } else {
         say "Query Error: " . to_json($res);
     }
-
 }
 
-sub search_p5iq_index {
-    my $res = _search_p5iq_index(@_);
-    for (@{ $res }) {
-        my $src =$_->{_source};
-        say join(":", $src->{file}, $src->{line_number}) . "\n" . $_->{_source}{content} . "\n";
-    }
-}
-
-sub _search_p5iq_index {
-    my ($query_string, $size) = @_;
-    $size //= 10;
-
+sub search_with_query_string  {
+    my ($args, $query_string, $cb) = @_;
     my $es_query = P5iq::analyze_for_query( PPI::Document->new( \$query_string ) );
 
     my ($status, $res) = P5iq->es->search(
         index => P5iq::idx(),
         body  => {
             query => $es_query,
-            size  => $size,
+            size  => $args->{size},
         }
     );
     if ($status eq '200') {
-        return $res->{hits}{hits};
+        $cb->($res);
     } else {
         say "Query Error: " . to_json($res);
     }
