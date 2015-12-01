@@ -82,38 +82,6 @@ sub _locate_symbols {
     }
 }
 
-sub locate_hash_name {
-    my ($query_string, $size) = @_;
-    my ($status, $res) = P5iq->es->search(
-        index => P5iq::idx(),
-        body  => {
-            query => {
-                bool => {
-                    must => [
-                        +{ term => { tags => "subscript:content={$query_string}" } }
-                    ]
-                },
-            },
-            aggs => {
-                hash_name => {
-                    terms => {
-                        field => "tags",
-                        include => "subscript:symbol.*",
-                        size => 0,
-                    }
-                },
-            }
-        }
-    );
-    if ($status eq '200') {
-        my @keys = map{ $_->{key} = substr($_->{key}, length('subscript:symbol=') ); $_->{key} }
-            @{ $res->{aggregations}{hash_name}{buckets} };
-        say join("\n", @keys);
-    } else {
-        say "Query Error: " . to_json($res);
-    }
-}
-
 sub search_with_query_string  {
     my ($args, $query_string, $cb) = @_;
     my $es_query = P5iq::analyze_for_query( PPI::Document->new( \$query_string ) );
@@ -224,6 +192,33 @@ sub frequency_hash_keys {
                         field => "tags",
                         include => ".*content.*",
                         exclude => ".*]",
+                        size => 0,
+                    }
+                }
+            }
+        }
+    }, $cb);
+}
+
+sub frequency_hash_names {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        { term => { tags => "subscript:content={$query_string}" } },
+        (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ())
+    );
+
+    es_search({
+        body  => {
+            size  => $args->{size} // 25,
+            query => {
+                bool => { must => \@conditions }
+            },
+            aggregations => {
+                hash_names => {
+                    terms => {
+                        field => "tags",
+                        include => "subscript:symbol.*",
                         size => 0,
                     }
                 }
