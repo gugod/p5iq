@@ -26,6 +26,7 @@ sub create_index_if_not_exist {
     my $es = es();
     my $TypeLineColumn = {
         properties => {
+            tag    => { type => "String", index => "not_analyzed" },
             line   => { type => "integer" },
             column => { type => "integer" }
         }
@@ -48,6 +49,7 @@ sub create_index_if_not_exist {
                             tags          => { "type" => "string","index" => "not_analyzed" },
                             scope         => {
                                 properties => {
+                                    tag    => { type => "String", index => "not_analyzed" },
                                     begin => $TypeLineColumn,
                                     end   => $TypeLineColumn,
                                 }
@@ -64,6 +66,7 @@ sub create_index_if_not_exist {
                             location      => $TypeLineColumn,
                             scope         => {
                                 properties => {
+                                    tag    => { type => "String", index => "not_analyzed" },
                                     begin => $TypeLineColumn,
                                     end   => $TypeLineColumn,
                                 }
@@ -81,6 +84,7 @@ sub create_index_if_not_exist {
                             tags          => { "type" => "string","index" => "not_analyzed" },
                             scope         => {
                                 properties => {
+                                    tag    => { type => "String", index => "not_analyzed" },
                                     begin => $TypeLineColumn,
                                     end   => $TypeLineColumn,
                                 }

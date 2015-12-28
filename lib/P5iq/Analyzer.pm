@@ -301,11 +301,14 @@ sub fleshen_scope_locations {
             my $loc_begin = $el->location;
             my $loc_end   = $el->last_element->location;
             push @$scope_doc, {
+                tag   => join(",", $loc_begin->[0], $loc_begin->[1], $loc_end->[0], $loc_end->[1]),
                 begin => {
+                    tag   => join(",", $loc_begin->[0], $loc_begin->[1]),
                     line => $loc_begin->[0],
                     column => $loc_begin->[1],
                 },
                 end   => {
+                    tag  => join(",", $loc_end->[0], $loc_end->[1]),
                     line => $loc_end->[0],
                     column => $loc_end->[1],
                 }
