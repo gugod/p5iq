@@ -14,9 +14,13 @@ sub analyze_for_index {
         ],
         p5_node => [
             extract_subscript($ppi_doc),
+        ],
+        p5_sub => [
             extract_subroutine($ppi_doc),
             extract_function_calls($ppi_doc),
             extract_method_calls($ppi_doc),
+        ],
+        p5_package => [
             extract_package($ppi_doc),
         ],
         p5_statement => [
@@ -64,8 +68,7 @@ sub extract_package_dependency {
         }
         push @doc, {
             class         => "P5iq::PackageDependency",
-            content       => $p,
-            token_content => \@deps,
+            content       => [$p, @deps],
         };
     }
 
@@ -220,8 +223,6 @@ sub extract_subscript {
             location => TypeLineColumn($c[0]->location),
             content       => join("", @c),
             class         => 'PPI::Structure::Subscript',
-            token_content => [map { $_->content } @c],
-            token_class   => [map { $_->class }   @c],
             tags          => [
                 "subscript:symbol=$c[0]",
                 "subscript:container=" . join("", map { $_->content } @c[0..$#c-1] ),

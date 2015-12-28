@@ -24,6 +24,7 @@ sub es {
 
 sub create_index_if_not_exist {
     my $es = es();
+
     my $TypeLineColumn = {
         properties => {
             tag    => { type => "String", index => "not_analyzed" },
@@ -31,68 +32,40 @@ sub create_index_if_not_exist {
             column => { type => "integer" }
         }
     };
+
+    my @GenericFields = (
+        project       => { "type" => "string", "index" => "not_analyzed" },
+        file          => { "type" => "string", "index" => "not_analyzed" },
+        class         => { "type" => "string", "index" => "not_analyzed" },
+        content       => { "type" => "string", "index" => "not_analyzed" },
+        tags          => { "type" => "string","index" => "not_analyzed" },
+        location      => $TypeLineColumn,
+        scope         => {
+            properties => {
+                tag    => { type => "String", index => "not_analyzed" },
+                begin => $TypeLineColumn,
+                end   => $TypeLineColumn,
+            }
+        }
+    );
+
     unless ($es->exists( index => idx() )) {
         my ($status, $res) = $es->put(
             index => idx(),
             body  => {
+                settings => {
+                    "index.mapper.dynamic" => 0
+                },
                 mappings => {
-                    p5_node => {
-                        properties => {
-                            project       => { "type" => "string", "index" => "not_analyzed" },
-                            file          => { "type" => "string", "index" => "not_analyzed" },
-                            line_number   => { "type" => "integer" },
-                            row_number    => { "type" => "integer" },
-                            class         => { "type" => "string", "index" => "not_analyzed" },
-                            content       => { "type" => "string", "index" => "not_analyzed" },
-                            token_content => { "type" => "string" },
-                            token_class   => { "type" => "string","index" => "not_analyzed" },
-                            tags          => { "type" => "string","index" => "not_analyzed" },
-                            location      => $TypeLineColumn,
-                            scope         => {
-                                properties => {
-                                    tag    => { type => "String", index => "not_analyzed" },
-                                    begin => $TypeLineColumn,
-                                    end   => $TypeLineColumn,
-                                }
-                            }
-                        }
-                    },
-                    p5_token => {
-                        properties => {
-                            project       => { "type" => "string", "index" => "not_analyzed" },
-                            file          => { "type" => "string", "index" => "not_analyzed" },
-                            class         => { "type" => "string", "index" => "not_analyzed" },
-                            content       => { "type" => "string", "index" => "not_analyzed" },
-                            tags          => { "type" => "string","index" => "not_analyzed" },
-                            location      => $TypeLineColumn,
-                            scope         => {
-                                properties => {
-                                    tag    => { type => "String", index => "not_analyzed" },
-                                    begin => $TypeLineColumn,
-                                    end   => $TypeLineColumn,
-                                }
-                            }
-                        }
-                    },
-                    p5_statement => {
-                        properties => {
-                            project       => { "type" => "string", "index" => "not_analyzed" },
-                            file          => { "type" => "string", "index" => "not_analyzed" },
-                            line_number   => { "type" => "integer" },
-                            class         => { "type" => "string", "index" => "not_analyzed" },
-                            token_content => { "type" => "string" },
-                            token_class   => { "type" => "string","index" => "not_analyzed" },
-                            tags          => { "type" => "string","index" => "not_analyzed" },
-                            location      => $TypeLineColumn,
-                            scope         => {
-                                properties => {
-                                    tag    => { type => "String", index => "not_analyzed" },
-                                    begin => $TypeLineColumn,
-                                    end   => $TypeLineColumn,
-                                }
-                            }
-                        }
-                    }
+                    p5_node => { properties => {
+                        (@GenericFields),
+                        token_content => { "type" => "string" },
+                        token_class   => { "type" => "string","index" => "not_analyzed" },
+                    } },
+                    p5_token => { properties => { @GenericFields } },
+                    p5_sub => { properties => { @GenericFields } },
+                    p5_package => { properties => { @GenericFields } },
+                    p5_statement => { properties => { @GenericFields } },
                 }
             }
         );
