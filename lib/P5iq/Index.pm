@@ -10,6 +10,7 @@ use File::Next;
 use JSON qw(to_json);
 use Parallel::ForkManager;
 
+use Git::Wrapper;
 use Sys::Info;
 use constant NCPU => Sys::Info->new->device('CPU')->count;
 
@@ -103,5 +104,41 @@ sub index_dirs {
     }
 }
 
+sub index_git_recent_changes {
+    my ($args, @dirs) = @_;
+    for my $srcdir (@dirs) {
+        process_git_dir(
+            $srcdir,
+            sub {
+                my ($files_changed) = @_;
+                for (@$files_changed) {
+                    my $file = $srcdir . "/" . $_;
+                    index_perl_source_code($args, $file);
+                }
+            }
+        );
+    }    
+}
+
+sub process_git_dir {
+    my ($dir, $cb) = @_;
+    my $git = Git::Wrapper->new($dir);
+    my ($base_commit) = $git->log(-n => 1);
+    $git->RUN('pull');
+    my ($latest_commit) = $git->log(-n => 1);
+
+    return if $base_commit->id eq $latest_commit->id;
+
+    say $base_commit->id . "..." . $latest_commit->id;
+
+    my @commits = $git->log({ raw => 1 }, $base_commit->id . ".." . $latest_commit->id);
+
+    my %files_changed;
+    for my $commit (@commits) {
+        my @files_modified = map { $_->filename } $commit->modifications;
+        @files_changed{@files_modified} = (1)x@files_modified;
+    }
+    $cb->([ keys %files_changed ]);
+}
 
 1;

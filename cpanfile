@@ -1,6 +1,7 @@
 requires 'DDP'                   => 0;
 requires 'Elastijk'              => 0;
 requires 'File::Next'            => 0;
+requires 'Git::Wrapper'          => '0.045';
 requires 'JSON'                  => 0;
 requires 'PPI'                   => 0;
 requires 'PPIx::LineToSub'       => 0;
