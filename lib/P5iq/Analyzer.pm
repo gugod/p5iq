@@ -155,21 +155,21 @@ sub extract_method_calls {
 
         my $context = @ctxt ? join("", @ctxt) : "???";
 
+        my @arglist_tokens;
         my $args = $method->snext_sibling;
-        $args = (ref($args) eq 'PPI::Structure::List') ? $args->content : "";
+        if ($args->isa('PPI::Structure::List')) {
+            @arglist_tokens = grep { $_->significant && !($_->isa("PPI::Token::Quote") || $_->isa("PPI::Token::QuoteLike") || $_->isa("PPI::Token::Structure") ) } $args->tokens;
+        }
 
         push @doc, {
             content       => join("", "$context", "->", "$method", "$args"),
             class         => 'P5iq::MethodCall',
             location      => TypeLineColumn($method->location),
             tags          => [
-                "subroutine:call",
-                "subroutine:name=$method",
-                "subroutine:arglist=$args",
                 "method:call",
                 "method:name=$method",
                 "method:context=$context",
-                "method:arglist=$args"
+                ( map { "arglist:tokens=$_" } @arglist_tokens )
             ],
         };
     }
@@ -191,7 +191,7 @@ sub extract_function_calls {
         my $args = $s->snext_sibling;
         next unless ref($args) eq 'PPI::Structure::List';
 
-        my @arglist_tokens = grep { $_->significant } $args->tokens;
+        my @arglist_tokens = grep { $_->significant && !($_->isa("PPI::Token::Quote") || $_->isa("PPI::Token::QuoteLike") || $_->isa("PPI::Token::Structure") ) } $args->tokens;
 
         my (@ns) = split(/::/, "$s");
         my $name = pop(@ns);
@@ -204,8 +204,7 @@ sub extract_function_calls {
                 "function:call",
                 "function:namespace=$namespace",
                 "function:name=$s",
-                "function:arglist=$args",
-                (map { "arglist.$_=" . $arglist_tokens[$_] } 0..$#arglist_tokens)
+                (map { "arglist:tokens=$_" } @arglist_tokens)
             ],
         };
     }
