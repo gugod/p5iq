@@ -2,6 +2,9 @@ package P5iq::Search;
 use v5.14;
 
 use P5iq;
+use P5iq::Analyzer;
+
+use Data::Printer;
 
 use PPI;
 use JSON qw(to_json);
@@ -19,13 +22,28 @@ sub es_search {
 
 sub search_with_query_string  {
     my ($args, $query_string, $cb) = @_;
-    my $es_query = P5iq::analyze_for_query( PPI::Document->new( \$query_string ) );
-    es_search({
-        body  => {
-            query => $es_query,
-            size  => $args->{size},
+    my $ppi_doc = PPI::Document->new( \$query_string );
+    my $analysis = P5iq::Analyzer::analyze_for_index($ppi_doc);
+    if ($analysis->{p5_sub}) {
+        for my $d (@{$analysis->{p5_sub}}) {
+            es_search({
+                type => "p5_sub",
+                body => {
+                    query => {
+                        dis_max => {
+                            queries => [
+                                { term => { class => $d->{class} } },
+                                { term => { content => $d->{content} } },
+                                { terms => { "tags" => $d->{tags} } },
+                            ]
+                        }
+                    }
+                },
+            }, $cb)
         }
-    }, $cb);
+    } else {
+        die "Unimplemented";
+    }
 }
 
 sub locate_variable {

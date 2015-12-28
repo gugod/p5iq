@@ -73,20 +73,6 @@ sub create_index_if_not_exist {
     }
 }
 
-sub analyze_for_query {
-    my ($ppi_doc) = @_;
-    my @tokens = grep { $_->significant } $ppi_doc->tokens;
-
-    my $es_query = {
-        bool => {
-            must   => [ (map { +{ term => { "token_class" => $_->class } } } @tokens) ],
-            should => [ (map { +{ match => { token_content => $_->content } } } @tokens) ]
-        }
-    };
-
-    return $es_query;
-}
-
 sub delete_all {
     my $es = es();
     $es->delete(
