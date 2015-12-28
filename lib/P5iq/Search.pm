@@ -20,9 +20,9 @@ sub es_search {
 sub locate_symbols {
     my ($query_string, $size, $symbol, $sub_named) = @_;
     my $res = _locate_symbols($query_string, $size, $symbol, $sub_named);
-    for (sort { $a->{_source}{file} cmp $b->{_source}{file} or $a->{_source}{line_number} <=> $b->{_source}{line_number} } @{ $res }) {
+    for (sort { $a->{_source}{file} cmp $b->{_source}{file} or $a->{_source}{location}{line} <=> $b->{_source}{location}{line} } @{ $res }) {
         my $src =$_->{_source};
-        say join(":", $src->{file}, $src->{line_number}) . ": " . $_->{_source}{content};
+        say join(":", $src->{file}, $src->{location}{line}) . ": " . $_->{_source}{content};
     }
     return;
 }
