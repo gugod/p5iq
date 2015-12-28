@@ -135,7 +135,7 @@ sub process_git_dir {
 
     my %files_changed;
     for my $commit (@commits) {
-        my @files_modified = map { $_->filename } $commit->modifications;
+        my @files_modified = grep { is_perl($_) } map { $_->filename } $commit->modifications;
         @files_changed{@files_modified} = (1)x@files_modified;
     }
     $cb->([ keys %files_changed ]);
