@@ -5,11 +5,14 @@ use warnings;
 sub analyze_for_index {
     my ($ppi_doc) = @_;
 
+    $ppi_doc->index_locations;
     $ppi_doc->index_line_to_sub;
 
     return {
-        p5_node => [
+        p5_token => [
             extract_token($ppi_doc),
+        ],
+        p5_node => [
             extract_subscript($ppi_doc),
             extract_subroutine($ppi_doc),
             extract_function_calls($ppi_doc),
@@ -237,11 +240,14 @@ sub extract_token {
         next unless $x->significant;
         my $location = $x->location;
         my $doc = {
-            line_number => $location->[0],
-            row_number  => $location->[1],
             content  => $x->content,
             class    => $x->class,
             tags     => [],
+            scope    => [],
+            location => {
+                line => $location->[0],
+                column => $location->[0],
+            }
         };
         if (ref($x) eq 'PPI::Token::Symbol') {
             push @{$doc->{tags}}, (

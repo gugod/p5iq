@@ -24,6 +24,12 @@ sub es {
 
 sub create_index_if_not_exist {
     my $es = es();
+    my $TypeLineColumn = {
+        properties => {
+            line   => { type => "integer" },
+            column => { type => "integer" }
+        }
+    };
     unless ($es->exists( index => idx() )) {
         my ($status, $res) = $es->put(
             index => idx(),
@@ -40,6 +46,28 @@ sub create_index_if_not_exist {
                             token_content => { "type" => "string" },
                             token_class   => { "type" => "string","index" => "not_analyzed" },
                             tags          => { "type" => "string","index" => "not_analyzed" },
+                            scope         => {
+                                properties => {
+                                    begin => $TypeLineColumn,
+                                    end   => $TypeLineColumn,
+                                }
+                            }
+                        }
+                    },
+                    p5_token => {
+                        properties => {
+                            project       => { "type" => "string", "index" => "not_analyzed" },
+                            file          => { "type" => "string", "index" => "not_analyzed" },
+                            class         => { "type" => "string", "index" => "not_analyzed" },
+                            content       => { "type" => "string", "index" => "not_analyzed" },
+                            tags          => { "type" => "string","index" => "not_analyzed" },
+                            location      => $TypeLineColumn,
+                            scope         => {
+                                properties => {
+                                    begin => $TypeLineColumn,
+                                    end   => $TypeLineColumn,
+                                }
+                            }
                         }
                     },
                     p5_statement => {
@@ -51,6 +79,12 @@ sub create_index_if_not_exist {
                             token_content => { "type" => "string" },
                             token_class   => { "type" => "string","index" => "not_analyzed" },
                             tags          => { "type" => "string","index" => "not_analyzed" },
+                            scope         => {
+                                properties => {
+                                    begin => $TypeLineColumn,
+                                    end   => $TypeLineColumn,
+                                }
+                            }
                         }
                     }
                 }
