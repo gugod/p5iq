@@ -2,6 +2,8 @@ package P5iq::Index;
 use v5.14;
 
 use P5iq;
+use P5iq::Analyzer;
+
 use PPI;
 
 use File::Next;
@@ -41,7 +43,7 @@ sub index_perl_source_code {
     my ($args, $file) = @_;
     my $ppi_doc = PPI::Document->new($file) or return;
 
-    my $features = P5iq::analyze_for_index($ppi_doc);
+    my $features = P5iq::Analyzer::analyze_for_index($ppi_doc);
 
     $args->{project} //= "";
     for my $type (keys %$features) {
