@@ -255,6 +255,8 @@ sub extract_token {
                 'symbol:canonical=' . $x->canonical
             );
 
+            fleshen_scope_locations($doc, $x->parent);
+
             my ($next_op, $prev_op);
             if ( ref(my $x_parent = $x->parent) eq 'PPI::Statement::Variable' ) {
                 push @{$doc->{tags}}, 'in:statement:variable';
@@ -286,6 +288,32 @@ sub extract_token {
         push @doc, $doc;
     }
     return @doc;
+}
+
+sub fleshen_scope_locations {
+    my ($doc, $ppi_element) = @_;
+    my @loc;
+    my $scope_doc = $doc->{scope} //= [];
+
+    my $el = $ppi_element;
+    while ($el) {
+        if ($el->scope) {
+            my $loc_begin = $el->location;
+            my $loc_end   = $el->last_element->location;
+            push @$scope_doc, {
+                begin => {
+                    line => $loc_begin->[0],
+                    column => $loc_begin->[1],
+                },
+                end   => {
+                    line => $loc_end->[0],
+                    column => $loc_end->[1],
+                }
+            }
+        }
+        $el = $el->parent;
+    }
+    return \@loc;
 }
 
 1;
