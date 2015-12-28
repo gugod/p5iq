@@ -66,6 +66,7 @@ sub create_index_if_not_exist {
                     p5_sub => { properties => { @GenericFields } },
                     p5_package => { properties => { @GenericFields } },
                     p5_statement => { properties => { @GenericFields } },
+                    p5_dependency => { properties => { @GenericFields } },
                 }
             }
         );

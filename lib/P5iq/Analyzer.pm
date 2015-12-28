@@ -24,9 +24,11 @@ sub analyze_for_index {
             extract_package($ppi_doc),
         ],
         p5_statement => [
-            extract_package_dependency($ppi_doc),
             extract_statements($ppi_doc)
-        ]
+        ],
+        p5_dependency => [
+            extract_package_dependency($ppi_doc),
+        ],
     }
 }
 
@@ -68,7 +70,11 @@ sub extract_package_dependency {
         }
         push @doc, {
             class         => "P5iq::PackageDependency",
-            content       => [$p, @deps],
+            content       => \@deps,
+            tags          => [
+                "package:dependency",
+                "package:name=" . $p,
+            ]
         };
     }
 
