@@ -189,6 +189,8 @@ sub extract_function_calls {
         my $args = $s->snext_sibling;
         next unless ref($args) eq 'PPI::Structure::List';
 
+        my @arglist_tokens = grep { $_->significant } $args->tokens;
+
         my (@ns) = split(/::/, "$s");
         my $name = pop(@ns);
         my $namespace = join("::", @ns);
@@ -197,13 +199,11 @@ sub extract_function_calls {
             class         => 'P5iq::FunctionCall',
             location      => TypeLineColumn([$s->location->[0], $args->location->[1]]),
             tags          => [
-                "subroutine:call",
-                "subroutine:name=$name",
-                "subroutine:namespace=$namespace",
-                "subroutine:arglist=$args",
                 "function:call",
+                "function:namespace=$namespace",
                 "function:name=$s",
-                "function:arglist=$args"
+                "function:arglist=$args",
+                (map { "arglist.$_=" . $arglist_tokens[$_] } 0..$#arglist_tokens)
             ],
         };
     }
