@@ -157,7 +157,7 @@ sub extract_method_calls {
 
         my @arglist_tokens;
         my $args = $method->snext_sibling;
-        if ($args->isa('PPI::Structure::List')) {
+        if ($args && $args->isa('PPI::Structure::List')) {
             @arglist_tokens = grep { $_->significant && !($_->isa("PPI::Token::Quote") || $_->isa("PPI::Token::QuoteLike") || $_->isa("PPI::Token::Structure") ) } $args->tokens;
         }
 
