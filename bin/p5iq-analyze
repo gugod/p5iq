@@ -7,6 +7,7 @@ use lib "${FindBin::Bin}/../local/lib/perl5";
 use lib "${FindBin::Bin}/../lib";
 
 use P5iq;
+use P5iq::Analyzer;
 
 use PPI;
 use DDP;
@@ -15,5 +16,5 @@ my $code = shift || die;
 
 my $ppi_doc = PPI::Document->new( -f $code ? $code : \$code ) or die;
 
-my @docs = P5iq::analyze_for_index($ppi_doc);
+my @docs = P5iq::Analyzer::analyze_for_index($ppi_doc);
 p @docs;

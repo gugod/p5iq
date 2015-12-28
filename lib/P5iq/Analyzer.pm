@@ -1,6 +1,8 @@
 package P5iq::Analyzer;
 use strict;
 use warnings;
+use Data::Dumper;
+use Storable 'dclone';
 
 sub analyze_for_index {
     my ($ppi_doc) = @_;
@@ -289,7 +291,30 @@ sub extract_token {
             }
         }
         push @doc, $doc;
+
+        #extract in-string variable
+        if (ref($x) eq 'PPI::Token::Quote::Double') {
+            #remove the quotation marks
+            my $in_string_content = substr $x->content, 1, -1;
+            my $in_string_ppi_doc = PPI::Document->new( \$in_string_content );
+            for my $y ( $in_string_ppi_doc->tokens ) {
+                next unless $y->significant;
+                if( ref($y) eq 'PPI::Token::Symbol' ){
+                    my $doc_t = dclone $doc;
+                    $doc_t->{content} = $y->content;
+                    $doc_t->{class} = $y->class;
+                    push @{$doc_t->{tags}}, (
+                            'symbol:actual='    . $y->symbol,
+                            'symbol:canonical=' . $y->canonical
+                            );
+                    push @{$doc_t->{tags}}, 'variable:in-string';
+                    push @doc, $doc_t;
+                }
+            }
+        }
     }
+
+
     return @doc;
 }
 
