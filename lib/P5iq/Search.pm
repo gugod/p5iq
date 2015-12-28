@@ -55,8 +55,8 @@ sub locate_variable {
 
     if ($args->{"in-string"}) {
         push @conditions, (
-            { prefix => { class => "PPI::Token::Quote" } },
-            (define($query_string) ? { regexp => { content => ".*\Q${query_string}\E.*" } } : ()),
+            { term => { tags => "variable:in-string" } },
+            (defined($query_string) ? { term => { tags => "symbol:actual=${query_string}" } } : ()),
         );
     } else {
         push @conditions, (
