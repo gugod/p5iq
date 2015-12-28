@@ -63,7 +63,10 @@ sub create_index_if_not_exist {
                         token_class   => { "type" => "string","index" => "not_analyzed" },
                     } },
                     p5_token => { properties => { @GenericFields } },
-                    p5_sub => { properties => { @GenericFields } },
+                    p5_sub => { properties => {
+                        @GenericFields,
+                        tokens => { "type" => "string","index" => "not_analyzed" },
+                    } },
                     p5_package => { properties => { @GenericFields } },
                     p5_statement => { properties => { @GenericFields } },
                     p5_dependency => { properties => { @GenericFields } },
