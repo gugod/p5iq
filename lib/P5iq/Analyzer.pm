@@ -26,6 +26,15 @@ sub analyze_for_index {
     }
 }
 
+sub TypeLineColumn {
+    my ($loc) = @_;
+    return {
+        tag  => join(",", $loc->[0], $loc->[1]),
+        line => $loc->[0],
+        column => $loc->[1],
+    }
+}
+
 sub extract_package_dependency {
     my ($ppi_doc) = @_;
 
@@ -68,13 +77,9 @@ sub extract_statements {
     my @doc;
     my $statements = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement') });
     for my $s (@$statements) {
-        my $location = $s->location;
-        my @tokens = grep { $_->significant } $s->tokens;
         push @doc, {
-            line_number => $location->[0],
-            class         => $s->class,
-            token_content => [ map { $_->content } @tokens ],
-            token_class   => [ map { $_->class   } @tokens ],
+            class    => $s->class,
+            location => TypeLineColumn($s->location)
         };
     }
     return @doc;
@@ -87,8 +92,7 @@ sub extract_package {
     return () unless $sub_nodes;
     for my $el (@$sub_nodes) {
         push @doc, {
-            line_number   => $el->location->[0],
-            row_number    => $el->location->[1],
+            location      => TypeLineColumn($el->location),
             class         => 'P5iq::Package',
             content       => $el->namespace,
             tags          => [
@@ -108,8 +112,7 @@ sub extract_subroutine {
     for my $el (@$sub_nodes) {
         my $n = $el->name;
         push @doc, {
-            line_number   => $el->location->[0],
-            row_number    => $el->location->[1],
+            location      => TypeLineColumn($el->location),
             class         => 'P5iq::Subroutine',
             content       => $n // "",
             tags          => [
@@ -145,10 +148,9 @@ sub extract_method_calls {
         $args = (ref($args) eq 'PPI::Structure::List') ? $args->content : "";
 
         push @doc, {
-            line_number   => $method->location->[0],
-            row_number    => $method->location->[1],
             content       => join("", "$context", "->", "$method", "$args"),
             class         => 'P5iq::MethodCall',
+            location      => TypeLineColumn($method->location),
             tags          => [
                 "subroutine:call",
                 "subroutine:name=$method",
@@ -182,10 +184,9 @@ sub extract_function_calls {
         my $name = pop(@ns);
         my $namespace = join("::", @ns);
         push @doc, {
-            line_number   => $s->location->[0],
-            row_number    => $args->location->[1],
             content       => join("", "$s", "$args"),
             class         => 'P5iq::FunctionCall',
+            location      => TypeLineColumn([$s->location->[0], $args->location->[1]]),
             tags          => [
                 "subroutine:call",
                 "subroutine:name=$name",
@@ -214,10 +215,9 @@ sub extract_subscript {
             unshift @c, $p;
             last if $p->isa("PPI::Token::Symbol");
         }
-        my $location = $c[0]->location;
+
         my $doc = {
-            line_number   => $location->[0],
-            row_number    => $location->[1],
+            location => TypeLineColumn($c[0]->location),
             content       => join("", @c),
             class         => 'PPI::Structure::Subscript',
             token_content => [map { $_->content } @c],
@@ -238,16 +238,12 @@ sub extract_token {
     my @doc;
     for my $x ( $ppi_doc->tokens ) {
         next unless $x->significant;
-        my $location = $x->location;
         my $doc = {
             content  => $x->content,
             class    => $x->class,
             tags     => [],
             scope    => [],
-            location => {
-                line => $location->[0],
-                column => $location->[0],
-            }
+            location => TypeLineColumn($x->location),
         };
         if (ref($x) eq 'PPI::Token::Symbol') {
             push @{$doc->{tags}}, (
@@ -302,16 +298,8 @@ sub fleshen_scope_locations {
             my $loc_end   = $el->last_element->location;
             push @$scope_doc, {
                 tag   => join(",", $loc_begin->[0], $loc_begin->[1], $loc_end->[0], $loc_end->[1]),
-                begin => {
-                    tag   => join(",", $loc_begin->[0], $loc_begin->[1]),
-                    line => $loc_begin->[0],
-                    column => $loc_begin->[1],
-                },
-                end   => {
-                    tag  => join(",", $loc_end->[0], $loc_end->[1]),
-                    line => $loc_end->[0],
-                    column => $loc_end->[1],
-                }
+                begin => TypeLineColumn($loc_begin),
+                end   => TypeLineColumn($loc_end),
             }
         }
         $el = $el->parent;
