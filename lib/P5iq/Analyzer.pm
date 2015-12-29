@@ -105,6 +105,9 @@ sub extract_statements {
         push @doc, {
             class    => $s->class,
             location => TypeRangeLineColumn($s, $s->last_token),
+            tags => [
+                "statement"
+            ]
         };
     }
     return @doc;
