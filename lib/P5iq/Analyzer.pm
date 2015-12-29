@@ -1,6 +1,7 @@
 package P5iq::Analyzer;
 use strict;
 use warnings;
+use List::MoreUtils qw(uniq);
 use Data::Dumper;
 use Storable 'dclone';
 
@@ -84,6 +85,7 @@ sub extract_package_dependency {
             my $d = (grep { $_->isa("PPI::Token::Word") } $_->tokens)[1];
             push @deps, $d->content if $d;
         }
+        @deps = uniq(@deps);
         push @doc, {
             class         => "P5iq::PackageDependency",
             content       => \@deps,
