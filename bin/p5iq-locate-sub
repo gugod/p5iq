@@ -31,6 +31,6 @@ P5iq::Search::locate_sub(
         my $res = shift;
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{location}{line}, $src->{location}{column}). "\n$src->{content}\n";
+            say join(":", $src->{file}, $src->{location}{begin}{line}, $src->{location}{begin}{column}). "\n$src->{content}\n";
         }
     });

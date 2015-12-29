@@ -27,7 +27,7 @@ P5iq::Search::locate_value(
         my $res = shift;
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{location}{line}, $src->{content});
+            say join(":", $src->{file}, $src->{location}{begin}{line}, $src->{content});
         }
     }
 );

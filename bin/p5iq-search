@@ -23,7 +23,7 @@ P5iq::Search::search_with_query_string(
         my $res = shift;
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{location}{line}) . "\n" . $_->{_source}{content} . "\n";
+            say join(":", $src->{file}, $src->{location}{begin}{line}) . "\n" . $_->{_source}{content} . "\n";
         }
     }
 );
