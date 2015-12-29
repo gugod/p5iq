@@ -233,21 +233,22 @@ sub extract_subscript {
     my ($ppi_doc) = @_;
     my @doc;
     for my $s (@{ $ppi_doc->find('PPI::Structure::Subscript') ||[] }) {
-        my @c = ( $s );
+        my @container;
         my $p = $s;
         while ($p = $p->sprevious_sibling) {
-            unshift @c, $p;
+            unshift @container, $p;
             last if $p->isa("PPI::Token::Symbol");
         }
-
+        my $container_type = ( substr($s,0,1) eq "{" ? "hash": "array" );
+        my @subscript_tokens = grep { $_->significant && /\p{Letter}/ } $s->tokens;
         my $doc = {
-            location => TypeRangeLineColumn($c[0], $c[-1]),
-            content       => join("", @c),
+            location => TypeRangeLineColumn($s, $s->last_token),
+            content       => [map {"$_"} @subscript_tokens],
             class         => 'PPI::Structure::Subscript',
             tags          => [
-                "subscript:symbol=$c[0]",
-                "subscript:container=" . join("", map { $_->content } @c[0..$#c-1] ),
-                "subscript:content=$s",
+                "subscript:symbol=$container[0]",
+                "subscript:container=" . join("", map { $_->content } @container ),
+                "subscript:container-type=${container_type}",
             ],
         };
         push @doc, $doc;
