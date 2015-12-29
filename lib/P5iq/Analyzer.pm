@@ -169,6 +169,8 @@ sub extract_method_calls {
                 "method:call",
                 "method:name=$method",
                 "method:invocant=$invocant",
+                ( substr($method,0,1) eq '$' ? "method:dynamic-name" : () ),
+                ( $invocant =~ /\A\w+ (:: \w+)* (::)?\z/x ? "method:class" : () ),
                 ( map { "arglist:tokens=$_" } @arglist_tokens )
             ],
         };
