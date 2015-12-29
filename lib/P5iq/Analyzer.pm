@@ -316,18 +316,20 @@ sub extract_token {
             #remove the quotation marks
             my $in_string_content = substr $x->content, 1, -1;
             my $in_string_ppi_doc = PPI::Document->new( \$in_string_content );
-            for my $y ( $in_string_ppi_doc->tokens ) {
-                next unless $y->significant;
-                if( ref($y) eq 'PPI::Token::Symbol' ){
-                    my $doc_t = dclone $doc;
-                    $doc_t->{content} = $y->content;
-                    $doc_t->{class} = $y->class;
-                    push @{$doc_t->{tags}}, (
+            if (defined($in_string_ppi_doc)) {
+                for my $y ( $in_string_ppi_doc->tokens ) {
+                    next unless $y->significant;
+                    if ( ref($y) eq 'PPI::Token::Symbol' ) {
+                        my $doc_t = dclone $doc;
+                        $doc_t->{content} = $y->content;
+                        $doc_t->{class} = $y->class;
+                        push @{$doc_t->{tags}}, (
                             'symbol:actual='    . $y->symbol,
                             'symbol:canonical=' . $y->canonical
-                            );
-                    push @{$doc_t->{tags}}, 'variable:in-string';
-                    push @doc, $doc_t;
+                        );
+                        push @{$doc_t->{tags}}, 'variable:in-string';
+                        push @doc, $doc_t;
+                    }
                 }
             }
         }
