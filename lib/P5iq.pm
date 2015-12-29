@@ -33,20 +33,22 @@ sub create_index_if_not_exist {
         }
     };
 
+    my $TypeRangeLineColumn = {
+        properties => {
+            tag    => { type => "String", index => "not_analyzed" },
+            begin => $TypeLineColumn,
+            end   => $TypeLineColumn,
+        }
+    };
+
     my @GenericFields = (
         project       => { "type" => "string", "index" => "not_analyzed" },
         file          => { "type" => "string", "index" => "not_analyzed" },
         class         => { "type" => "string", "index" => "not_analyzed" },
         content       => { "type" => "string", "index" => "not_analyzed" },
         tags          => { "type" => "string","index" => "not_analyzed" },
-        location      => $TypeLineColumn,
-        scope         => {
-            properties => {
-                tag    => { type => "String", index => "not_analyzed" },
-                begin => $TypeLineColumn,
-                end   => $TypeLineColumn,
-            }
-        }
+        location      => $TypeRangeLineColumn,
+        scope         => $TypeRangeLineColumn,
     );
 
     unless ($es->exists( index => idx() )) {

@@ -43,6 +43,20 @@ sub TypeLineColumn {
     }
 }
 
+sub TypeRangeLineColumn {
+    my ($begin_ppi_node, $end_ppi_node) = @_;
+    $end_ppi_node //= $begin_ppi_node;
+
+    my $begin_loc = [@{ $begin_ppi_node->location }];
+    my $end_loc   = [@{ $end_ppi_node->location }];
+    my $d = {
+        begin => TypeLineColumn($begin_loc),
+        end   => TypeLineColumn($end_loc),
+        tag   => join(",", $begin_loc->[0], $begin_loc->[1], $end_loc->[0], $end_loc->[1]),
+    };
+    return $d;
+}
+
 sub extract_package_dependency {
     my ($ppi_doc) = @_;
 
@@ -90,7 +104,7 @@ sub extract_statements {
     for my $s (@$statements) {
         push @doc, {
             class    => $s->class,
-            location => TypeLineColumn($s->location)
+            location => TypeRangeLineColumn($s),
         };
     }
     return @doc;
@@ -103,7 +117,7 @@ sub extract_package {
     return () unless $sub_nodes;
     for my $el (@$sub_nodes) {
         push @doc, {
-            location      => TypeLineColumn($el->location),
+            location      => TypeRangeLineColumn($el),
             class         => 'P5iq::Package',
             content       => $el->namespace,
             tags          => [
@@ -123,7 +137,7 @@ sub extract_subroutine {
     for my $el (@$sub_nodes) {
         my $n = $el->name;
         push @doc, {
-            location      => TypeLineColumn($el->location),
+            location      => TypeRangeLineColumn($el, $el->last_token),
             class         => 'P5iq::Subroutine',
             content       => $n // "",
             tags          => [
@@ -164,7 +178,7 @@ sub extract_method_calls {
         push @doc, {
             content       => join("", "$invocant", "->", "$method", "$args"),
             class         => 'P5iq::MethodCall',
-            location      => TypeLineColumn($method->location),
+            location      => TypeRangeLineColumn($method),
             tags          => [
                 "method:call",
                 "method:name=$method",
@@ -201,7 +215,7 @@ sub extract_function_calls {
         push @doc, {
             content       => join("", "$s", "$args"),
             class         => 'P5iq::FunctionCall',
-            location      => TypeLineColumn([$s->location->[0], $args->location->[1]]),
+            location      => TypeRangeLineColumn($s, $args),
             tags          => [
                 "function:call",
                 "function:namespace=$namespace",
@@ -229,7 +243,7 @@ sub extract_subscript {
         }
 
         my $doc = {
-            location => TypeLineColumn($c[0]->location),
+            location => TypeRangeLineColumn($c[0], $c[-1]),
             content       => join("", @c),
             class         => 'PPI::Structure::Subscript',
             tags          => [
@@ -253,7 +267,7 @@ sub extract_token {
             class    => $x->class,
             tags     => [],
             scope    => [],
-            location => TypeLineColumn($x->location),
+            location => TypeRangeLineColumn($x),
         };
         if (ref($x) eq 'PPI::Token::Symbol') {
             push @{$doc->{tags}}, (
