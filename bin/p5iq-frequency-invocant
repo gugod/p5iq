@@ -27,7 +27,7 @@ P5iq::Search::frequency_invocant(
     sub {
         my $res = shift;
         for (@{$res->{aggregations}{invocant}{buckets}}) {
-            my $k = $_->{key} =~ s/^method:context=//r;
+            my $k = $_->{key} =~ s/^method:invocant=//r;
             say "$_->{doc_count}\t$k";
         }
     });

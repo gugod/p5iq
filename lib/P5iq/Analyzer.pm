@@ -145,15 +145,15 @@ sub extract_method_calls {
         my $method = $s->snext_sibling;
         next unless $method->isa('PPI::Token');
 
-        my @ctxt;
+        my @invocant;
         my $p = $s;
         while ($p = $p->sprevious_sibling) {
             last if !$p->isa('PPI::Token') || $p->isa('PPI::Token::Operator') && $p->content ne '->';
-            last if @ctxt && $p->isa('PPI::Token::Word') && !$ctxt[0]->isa('PPI::Token::Operator');
-            unshift(@ctxt, $p);
+            last if @invocant && $p->isa('PPI::Token::Word') && !$invocant[0]->isa('PPI::Token::Operator');
+            unshift(@invocant, $p);
         }
 
-        my $context = @ctxt ? join("", @ctxt) : "???";
+        my $invocant = @invocant ? join("", @invocant) : "???";
 
         my @arglist_tokens;
         my $args = $method->snext_sibling;
@@ -162,13 +162,13 @@ sub extract_method_calls {
         }
 
         push @doc, {
-            content       => join("", "$context", "->", "$method", "$args"),
+            content       => join("", "$invocant", "->", "$method", "$args"),
             class         => 'P5iq::MethodCall',
             location      => TypeLineColumn($method->location),
             tags          => [
                 "method:call",
                 "method:name=$method",
-                "method:context=$context",
+                "method:invocant=$invocant",
                 ( map { "arglist:tokens=$_" } @arglist_tokens )
             ],
         };

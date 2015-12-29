@@ -269,7 +269,7 @@ sub frequency_invocant {
                 invocant => {
                     terms => {
                         field => "tags",
-                        include => "method:context=.*",
+                        include => "method:invocant=.*",
                         size  => $args->{size} // 25,
                     }
                 }
