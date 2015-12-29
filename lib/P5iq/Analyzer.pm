@@ -146,7 +146,7 @@ sub extract_subroutine {
     return () unless $sub_nodes;
     for my $el (@$sub_nodes) {
         my $n = $el->name;
-        push @doc, {
+        my $d = {
             location      => TypeRangeLineColumn($el, $el->last_token),
             class         => 'P5iq::Subroutine',
             content       => $n // "",
@@ -154,7 +154,9 @@ sub extract_subroutine {
                 "subroutine:def",
                 (defined($n) ? "subroutine:name=$n" : "subroutine:unnamed")
             ]
-        }
+        };
+        fleshen_scope_locations($d, $el);
+        push @doc, $d;
     }
     return @doc;
 }
@@ -185,7 +187,7 @@ sub extract_method_calls {
             @arglist_tokens = map { "$_" } grep { $_->significant && /\p{Letter}|\p{Digit}/ } $args->tokens;
         }
 
-        push @doc, {
+        my $d = {
             content       => [ (map {"$_"} @invocant), @arglist_tokens ],
             class         => 'P5iq::MethodCall',
             location      => TypeRangeLineColumn($method, ($args ? $args->last_token : undef)),
@@ -197,6 +199,8 @@ sub extract_method_calls {
                 ( $invocant =~ /\A\w+ (:: \w+)* (::)?\z/x ? "method:class" : () ),
             ],
         };
+        fleshen_scope_locations($d, $s->parent);
+        push @doc, $d;
     }
     return @doc;
 }
