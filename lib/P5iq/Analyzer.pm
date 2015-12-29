@@ -383,13 +383,13 @@ sub extract_pod{
             foreach my $s ( @{$pom->head1()} ) {
                 my $doc_t = dclone $doc;
                 $doc_t->{title} = $s->title()->present($text_view);
-                $doc_t->{content} = $s->text()->present($text_view);
+                $doc_t->{text} = $s->text()->present($text_view);
                 push @{$doc_t->{tags}}, 'pod:head1';
                 push @doc, $doc_t;
                 foreach my $ss ($s->head2()) {
                     my $doc_t = dclone $doc;
                     $doc_t->{title} = $ss->title()->present($text_view);
-                    $doc_t->{content} = $ss->text()->present($text_view);
+                    $doc_t->{text} = $ss->text()->present($text_view);
                     push @{$doc_t->{tags}}, 'pod:head2';
                     push @doc, $doc_t;
                 }
