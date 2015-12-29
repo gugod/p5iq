@@ -1,0 +1,77 @@
+#!/usr/bin/env perl
+use v5.14;
+use warnings;
+
+use FindBin;
+use lib "${FindBin::Bin}/../local/lib/perl5";
+use lib "${FindBin::Bin}/../lib";
+use List::MoreUtils qw(uniq);
+
+use P5iq;
+use P5iq::Search;
+
+sub package_definition {
+    my ($pkgname) = @_;
+    my $ret = [];
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        { term => { tags => "package:def" } },
+                        { term => { tags => "package:name=${pkgname}" } }
+                    ]
+                }
+            }
+        }
+    }, sub {
+        my ($res) = @_;
+        for (@{$res->{hits}{hits}}) {
+            push @$ret, $_->{_source};
+        }
+    });
+    return $ret;
+}
+
+sub package_dependency {
+    my ($pkgname) = @_;
+    my $ret = [];
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        { term => { tags => "package:dependency" } },
+                        { term => { tags => "package:name=${pkgname}" } }
+                    ]
+                }
+            }
+        }
+    }, sub {
+        my ($res) = @_;
+        for (@{$res->{hits}{hits}}) {
+            push @$ret, $_->{_source};
+        }
+    });
+    return $ret;
+}
+
+my $query_string = shift or die;
+
+my $definitions = package_definition($query_string);
+my $dependencies = package_dependency($query_string);
+
+say "# Package: $query_string\n";
+say "Definitions";
+for (@$definitions) {
+    say "- " . $_->{file};
+}
+
+say "\nDependencies";
+for (sort { $a cmp $b } uniq(map {@{$_->{content}}} @$dependencies)) {
+    say "- $_";
+}
+
+
