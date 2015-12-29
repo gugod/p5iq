@@ -177,7 +177,7 @@ sub extract_method_calls {
         my @arglist_tokens;
         my $args = $method->snext_sibling;
         if ($args && $args->isa('PPI::Structure::List')) {
-            @arglist_tokens = map { "$_" } grep { $_->significant && /\p{Letter}/ } $args->tokens;
+            @arglist_tokens = map { "$_" } grep { $_->significant && /\p{Letter}|\p{Digit}/ } $args->tokens;
         }
 
         push @doc, {
@@ -211,7 +211,7 @@ sub extract_function_calls {
         my $args = $s->snext_sibling;
         next unless ref($args) eq 'PPI::Structure::List';
 
-        my @arglist_tokens = map { "$_" } grep { $_->significant && /\p{Letter}/ } $args->tokens;
+        my @arglist_tokens = map { "$_" } grep { $_->significant && /\p{Letter}|\p{Digit}/ } $args->tokens;
 
         my (@ns) = split(/::/, "$s");
         my $name = pop(@ns);
@@ -245,7 +245,7 @@ sub extract_subscript {
             last if $p->isa("PPI::Token::Symbol");
         }
         my $container_type = ( substr($s,0,1) eq "{" ? "hash": "array" );
-        my @subscript_tokens = grep { $_->significant && /\p{Letter}/ } $s->tokens;
+        my @subscript_tokens = grep { $_->significant && /\p{Letter}|\p{Digit}/ } $s->tokens;
         my $doc = {
             location => TypeRangeLineColumn($s, $s->last_token),
             content       => [map {"$_"} @subscript_tokens],
