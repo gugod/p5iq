@@ -176,7 +176,7 @@ sub extract_method_calls {
         }
 
         push @doc, {
-            content       => [ "$invocant", @arglist_tokens ],
+            content       => [ (map {"$_"} @invocant), @arglist_tokens ],
             class         => 'P5iq::MethodCall',
             location      => TypeRangeLineColumn($method, ($args ? $args->last_token : undef)),
             tags          => [
@@ -212,7 +212,7 @@ sub extract_function_calls {
         my $name = pop(@ns);
         my $namespace = join("::", @ns);
         push @doc, {
-            content       => [ "$s", "$name", @arglist_tokens ],
+            content       => [ (@ns ? "$s" :""), "$name", @arglist_tokens ],
             class         => 'P5iq::FunctionCall',
             location      => TypeRangeLineColumn($s, $args->last_token),
             tags          => [
