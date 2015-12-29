@@ -24,6 +24,7 @@ sub es {
 
 sub create_index_if_not_exist {
     my $es = es();
+    return if $es->exists( index => idx() );
 
     my $TypeLineColumn = {
         properties => {
@@ -51,31 +52,29 @@ sub create_index_if_not_exist {
         scope         => $TypeRangeLineColumn,
     );
 
-    unless ($es->exists( index => idx() )) {
-        my ($status, $res) = $es->put(
-            index => idx(),
-            body  => {
-                settings => {
-                    "index.mapper.dynamic" => 0
-                },
-                mappings => {
-                    p5_node => { properties => {
-                        (@GenericFields),
-                        token_content => { "type" => "string" },
-                        token_class   => { "type" => "string","index" => "not_analyzed" },
-                    } },
-                    p5_token => { properties => { @GenericFields } },
-                    p5_sub => { properties => {
-                        @GenericFields,
-                        tokens => { "type" => "string","index" => "not_analyzed" },
-                    } },
-                    p5_package => { properties => { @GenericFields } },
-                    p5_statement => { properties => { @GenericFields } },
-                    p5_dependency => { properties => { @GenericFields } },
-                }
+    my ($status, $res) = $es->put(
+        index => idx(),
+        body  => {
+            settings => {
+                "index.mapper.dynamic" => 0
+            },
+            mappings => {
+                p5_node => { properties => {
+                    (@GenericFields),
+                    token_content => { "type" => "string" },
+                    token_class   => { "type" => "string","index" => "not_analyzed" },
+                } },
+                p5_token => { properties => { @GenericFields } },
+                p5_sub => { properties => {
+                    @GenericFields,
+                    tokens => { "type" => "string","index" => "not_analyzed" },
+                } },
+                p5_package => { properties => { @GenericFields } },
+                p5_statement => { properties => { @GenericFields } },
+                p5_dependency => { properties => { @GenericFields } },
             }
-        );
-    }
+        }
+    );
 }
 
 sub delete_all {
