@@ -72,11 +72,27 @@ sub es_object {
 sub delete_by_file {
     state $es = es_object();
     my $file = shift;
-    $es->delete(
+    my @todo;
+    $es->scan_scroll(
         index => P5iq::idx(),
-        command => "_query",
-        body => { query => { term => { file => $file }}}
+        body => { query => { term => { file => $file }}, _source => [], size => 1000 },
+        on_response => sub {
+            my ($status, $res) = @_;
+            return 0 if $status ne "200";
+            for (@{$res->{hits}{hits}}) {
+                push @todo, [ $_->{_type}, $_->{_id} ];
+            }
+            return 1;
+        }
     );
+
+    while (my @batch = splice(@todo, 0, 1000)) {
+        say "[$$] delete\t$file\told features: " . scalar(@batch);
+        $es->bulk(
+            index => P5iq::idx(),
+            body => [ map { +{ delete => { _type => $_->[0], _id => $_->[1] } } } @batch ]
+        );
+    }
 }
 
 sub index_these {
