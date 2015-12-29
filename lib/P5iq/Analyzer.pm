@@ -104,7 +104,7 @@ sub extract_statements {
     for my $s (@$statements) {
         push @doc, {
             class    => $s->class,
-            location => TypeRangeLineColumn($s),
+            location => TypeRangeLineColumn($s, $s->last_token),
         };
     }
     return @doc;
