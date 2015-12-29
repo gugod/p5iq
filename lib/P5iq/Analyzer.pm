@@ -215,12 +215,12 @@ sub extract_function_calls {
         push @doc, {
             content       => join("", "$s", "$args"),
             class         => 'P5iq::FunctionCall',
-            location      => TypeRangeLineColumn($s, $args),
+            location      => TypeRangeLineColumn($s, $args->last_token),
             tags          => [
                 "function:call",
                 "function:namespace=$namespace",
                 "function:name=$s",
-                (map { "arglist:tokens=$_" } @arglist_tokens)
+                (map { "arglist:tokens=$_" } grep { /\p{Letter}/ } @arglist_tokens)
             ],
         };
     }
