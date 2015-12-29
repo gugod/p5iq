@@ -172,11 +172,11 @@ sub extract_method_calls {
         my @arglist_tokens;
         my $args = $method->snext_sibling;
         if ($args && $args->isa('PPI::Structure::List')) {
-            @arglist_tokens = grep { $_->significant && !($_->isa("PPI::Token::Quote") || $_->isa("PPI::Token::QuoteLike") || $_->isa("PPI::Token::Structure") ) } $args->tokens;
+            @arglist_tokens = map { "$_" } grep { $_->significant && /\p{Letter}/ } $args->tokens;
         }
 
         push @doc, {
-            content       => join("", "$invocant", "->", "$method", "$args"),
+            content       => [ "$invocant", @arglist_tokens ],
             class         => 'P5iq::MethodCall',
             location      => TypeRangeLineColumn($method, ($args ? $args->last_token : undef)),
             tags          => [
@@ -185,7 +185,6 @@ sub extract_method_calls {
                 "method:invocant=$invocant",
                 ( substr($method,0,1) eq '$' ? "method:dynamic-name" : () ),
                 ( $invocant =~ /\A\w+ (:: \w+)* (::)?\z/x ? "method:class" : () ),
-                ( map { "arglist:tokens=$_" } grep { /\p{Letter}/ } @arglist_tokens )
             ],
         };
     }
@@ -207,20 +206,19 @@ sub extract_function_calls {
         my $args = $s->snext_sibling;
         next unless ref($args) eq 'PPI::Structure::List';
 
-        my @arglist_tokens = grep { $_->significant && !($_->isa("PPI::Token::Quote") || $_->isa("PPI::Token::QuoteLike") || $_->isa("PPI::Token::Structure") ) } $args->tokens;
+        my @arglist_tokens = map { "$_" } grep { $_->significant && /\p{Letter}/ } $args->tokens;
 
         my (@ns) = split(/::/, "$s");
         my $name = pop(@ns);
         my $namespace = join("::", @ns);
         push @doc, {
-            content       => join("", "$s", "$args"),
+            content       => [ "$s", "$name", @arglist_tokens ],
             class         => 'P5iq::FunctionCall',
             location      => TypeRangeLineColumn($s, $args->last_token),
             tags          => [
                 "function:call",
                 "function:namespace=$namespace",
-                "function:name=$s",
-                (map { "arglist:tokens=$_" } grep { /\p{Letter}/ } @arglist_tokens)
+                "function:name=$name"
             ],
         };
     }
