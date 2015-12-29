@@ -1,6 +1,7 @@
 package P5iq;
 use v5.14;
 
+use Data::Dumper;
 use PPIx::LineToSub;
 use Elastijk;
 
@@ -76,12 +77,15 @@ sub create_index_if_not_exist {
                     properties => {
                         @GenericFields,
                         title   => {"type" => "string" },
-                        content => {"type" => "string" },
+                        text    => {"type" => "string" },
                     }
                 },
             }
         }
     );
+    if ($status ne "200") {
+        die "Failed to create index. ABORT: " . Data::Dumper::Dumper([$status, $res]);
+    }
 }
 
 sub delete_all {
