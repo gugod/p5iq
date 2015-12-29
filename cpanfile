@@ -8,3 +8,4 @@ requires 'PPIx::LineToSub'       => 0;
 requires 'Parallel::ForkManager' => 0;
 requires 'Sys::Info'             => 0;
 requires 'Sys::Info::Device::CPU' => 0;
+requires 'List::MoreUtils'       => 0;
