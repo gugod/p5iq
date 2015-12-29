@@ -178,7 +178,7 @@ sub extract_method_calls {
         push @doc, {
             content       => join("", "$invocant", "->", "$method", "$args"),
             class         => 'P5iq::MethodCall',
-            location      => TypeRangeLineColumn($method),
+            location      => TypeRangeLineColumn($method, ($args ? $args->last_token : undef)),
             tags          => [
                 "method:call",
                 "method:name=$method",
