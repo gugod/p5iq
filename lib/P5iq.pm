@@ -72,6 +72,13 @@ sub create_index_if_not_exist {
                 p5_package => { properties => { @GenericFields } },
                 p5_statement => { properties => { @GenericFields } },
                 p5_dependency => { properties => { @GenericFields } },
+                p5_pod => {
+                    properties => {
+                        @GenericFields,
+                        title   => {"type" => "string" },
+                        content => {"type" => "string" },
+                    }
+                },
             }
         }
     );

@@ -9,3 +9,4 @@ requires 'Parallel::ForkManager' => 0;
 requires 'Sys::Info'             => 0;
 requires 'Sys::Info::Device::CPU' => 0;
 requires 'List::MoreUtils'       => 0;
+requires 'Pod::POM'               => 0;

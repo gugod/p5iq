@@ -4,6 +4,8 @@ use warnings;
 use List::MoreUtils qw(uniq);
 use Data::Dumper;
 use Storable 'dclone';
+use Pod::POM;
+use Pod::POM::View::Text;
 
 sub analyze_for_index {
     my ($ppi_doc) = @_;
@@ -31,6 +33,9 @@ sub analyze_for_index {
         ],
         p5_dependency => [
             extract_package_dependency($ppi_doc),
+        ],
+        p5_pod => [
+            extract_pod($ppi_doc),
         ],
     }
 }
@@ -358,6 +363,40 @@ sub fleshen_scope_locations {
         $el = $el->parent;
     }
     return \@loc;
+}
+
+sub extract_pod{
+    my ($ppi_doc) = @_;
+    my @doc;
+    for my $x ( $ppi_doc->tokens ) {
+        my $doc = {
+            content  => $x->content,
+            class    => $x->class,
+            tags     => [],
+            scope    => [],
+            location => TypeRangeLineColumn($x),
+        };
+        if (ref($x) eq 'PPI::Token::Pod') {
+            my $parser = Pod::POM->new();
+            my $pom = $parser->parse_text( $x->{content} );
+            my $text_view = 'Pod::POM::View::Text';
+            foreach my $s ( @{$pom->head1()} ) {
+                my $doc_t = dclone $doc;
+                $doc_t->{title} = $s->title()->present($text_view);
+                $doc_t->{content} = $s->text()->present($text_view);
+                push @{$doc_t->{tags}}, 'pod:head1';
+                push @doc, $doc_t;
+                foreach my $ss ($s->head2()) {
+                    my $doc_t = dclone $doc;
+                    $doc_t->{title} = $ss->title()->present($text_view);
+                    $doc_t->{content} = $ss->text()->present($text_view);
+                    push @{$doc_t->{tags}}, 'pod:head2';
+                    push @doc, $doc_t;
+                }
+            }
+        }
+    }
+    return @doc;
 }
 
 1;
