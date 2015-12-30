@@ -7,15 +7,19 @@ use P5iq::Search;
 
 sub project {
     my ($project_name) = @_;
-
     my $info = {};
-
     __fleshen_project_info_files($info, $project_name);
     __fleshen_project_info_packages($info, $project_name);
+    return undef if keys %$info == 0;
+    return $info;
+}
 
-    if (keys %$info == 0) {
-        return undef;
-    }
+sub package {
+    my ($name, $options) = @_;
+    my $info = {};
+    __fleshen_package_info_files($info, $name, $options);
+    __fleshen_package_info_subroutines($info, $name, $options);
+    return undef if keys %$info == 0;
     return $info;
 }
 
@@ -70,6 +74,72 @@ sub __fleshen_project_info_files {
         if ($res->{hits}{total} > 0) {
             $info->{files} = [ map { +{ name => $_->{key} } } @{ $res->{aggregations}{files}{buckets} } ];
             $info->{files_count} = $res->{aggregations}{files_count}{value};
+        }
+    });
+}
+
+sub __fleshen_package_info_files {
+    my ($info, $name, $options) = @_;
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                constant_score => {
+                    query => {
+                        bool => {
+                            must => [
+                                (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
+                                { term => { tags    => "package:def" } },
+                                { term => { tags    => "package:name=$name" } },
+                            ]
+                        }
+                    }
+                }
+            },
+            size => 0,
+            aggregations => {
+                files => {
+                    terms => { field => "file", size => 0 },
+                }
+            }
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            $info->{files} = [ map { +{ name => $_->{key} } } @{ $res->{aggregations}{files}{buckets} } ];
+        }
+    });
+}
+
+sub __fleshen_package_info_subroutines {
+    my ($info, $name, $options) = @_;
+
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
+                        { term => { tags    => "subroutine:def" } },
+
+                        # XXX: Bad -- rewrite this by populating "package:name" in analyer.
+                        { terms => { file => [ map { $_->{name} } @{$info->{files}} ] } },
+                        # XXX: by then, replace the line above with: { term => { tags    => "package:name=$name" } },
+                    ]
+                }
+            },
+            size => 0,
+            aggregations => {
+                subroutines => {
+                    terms => { field => "tags", include => "subroutine:name=.*", size => 0 },
+                }
+            }
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            $info->{subroutines} = [ map { +{ name => substr($_->{key}, 16) } } @{ $res->{aggregations}{subroutines}{buckets} } ];
         }
     });
 }

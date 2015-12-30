@@ -1,0 +1,22 @@
+<div class="content">
+    <h4>file(s)</h4>
+    <ul>
+        <% FOREACH file IN package_info.files %>
+        <li><% file.name %></li>
+        <% END %>
+    </ul>
+
+    <h4>dependencies</h4>
+    <ul>
+        <% FOREACH dependency IN package_info.dependencies %>
+        <li><% dependency.name %></li>
+        <% END %>
+    </ul>
+
+    <h4>subroutines</h4>
+    <ul>
+        <% FOREACH subroutine IN package_info.subroutines %>
+        <li><% subroutine.name %></li>
+        <% END %>
+    </ul>
+</div>

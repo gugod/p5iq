@@ -45,11 +45,17 @@ get '/' => sub {
 };
 
 get "/project" => sub {
-    my $project_name = params->{'p'};
+    my $project_name = params->{'n'};
     my $project_info = P5iq::Info::project($project_name);
 
     if (!$project_info) {
         send_error("Not found", 404);
+    }
+
+    if ($project_info->{packages}) {
+        for (@{$project_info->{packages}}) {
+            $_->{url} = uri_for("/package", { project => $project_name, n => $_->{name} });
+        }
     }
 
     my $stash = {};
@@ -57,6 +63,40 @@ get "/project" => sub {
 
     fleshen_global_content($stash);
     template project => $stash;
+};
+
+get "/package" => sub {
+    my $package_name = params->{n};
+    my $project_name = params->{project};
+    my $package_info = P5iq::Info::package($package_name, { project => $project_name });
+
+    if (!$package_info) {
+        send_error("Not found", 404);
+    }
+
+    if ($package_info->{subroutines}) {
+        for (@{$package_info->{subroutines}}) {
+            $_->{url} = uri_for("/subroutine", { project => $project_name, package => $package_name, n => $_->{name} });
+        }
+    }
+
+    my $stash = {};
+    $stash->{package_info} = $package_info;
+
+    fleshen_global_content($stash);
+    template package => $stash;
+};
+
+get "/subroutine" => sub {
+    my $stash = {};
+    fleshen_global_content($stash);
+    template subroutine => $stash;
+};
+
+get "/nothing" => sub {
+    my $stash = {};
+    fleshen_global_content($stash);
+    template nothing => $stash;
 };
 
 my $default_call_back = sub {
@@ -79,7 +119,7 @@ sub fleshen_global_content {
     my @projects = map {
         +{
             name => $_,
-            url  => uri_for("/project", {p => $_})
+            url  => uri_for("/project", {n => $_})
        }
     } @{P5iq::Search::list_project()};
 

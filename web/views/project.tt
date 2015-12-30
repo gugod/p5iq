@@ -10,7 +10,7 @@
     <h2>packages</h2>
     <ul>
         <% FOREACH package IN project_info.packages %>
-        <li><% package.name %></li>
+        <li><a href="<% package.url %>"><% package.name %></a></li>
         <% END %>
     </ul>
     
