@@ -1,0 +1,103 @@
+#!/usr/bin/env perl
+use v5.14;
+use warnings;
+
+use FindBin;
+use lib "${FindBin::Bin}/../local/lib/perl5";
+use lib "${FindBin::Bin}/../lib";
+use List::MoreUtils qw(uniq);
+
+use P5iq;
+use P5iq::Search;
+use Data::Dumper;
+
+sub subroutine_definition {
+    my ($subroutine_name) = @_;
+    my $ret = [];
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        { term => { tags => "subroutine:def" } },
+                        { term => { tags => "subroutine:name=${subroutine_name}" } }
+                    ]
+                }
+            }
+        }
+    }, sub {
+        my ($res) = @_;
+        for (@{$res->{hits}{hits}}) {
+            push @$ret, $_->{_source};
+        }
+    });
+    return $ret;
+}
+
+sub subroutine_dependency {
+}
+
+sub subroutine_use_cases{
+    my ($subroutine_name) = @_;
+    my $ret = [];
+
+    my $args = {call => 1};
+    P5iq::Search::locate_sub(
+        $args, $subroutine_name,
+        sub {
+            my ($res) = @_;
+            for (@{$res->{hits}{hits}}) {
+                push @$ret, $_->{_source};
+            }
+        }
+    );
+    return $ret;
+}
+
+sub subroutine_pod {
+    my ($subroutine_name) = @_;
+    my $ret = [];
+    
+    my $args = {};
+    P5iq::Search::locate_pod(
+        $args, $subroutine_name,
+        sub {
+            my ($res) = @_;
+            for (@{$res->{hits}{hits}}) {
+                push @$ret, $_->{_source};
+            }
+        }
+    );
+    return $ret;
+}
+
+
+my $query_string = shift or die;
+
+my $definitions = subroutine_definition($query_string);
+say "# Subroutine: $query_string\n";
+say "Definitions";
+for (@$definitions) {
+    say "- " . $_->{file}. " : ". $_->{location}->{begin}->{line};
+}
+
+my $dependencies = subroutine_dependency($query_string);
+#say "\nDependencies";
+#for (sort { $a cmp $b } uniq(map {@{$_->{content}}} @$dependencies)) {
+#    say "- $_";
+#}
+
+
+my $use_cases = subroutine_use_cases($query_string);
+say "\nuse cases";
+for (@$use_cases) {
+    say "- " . $_->{file}. " : ". $_->{location}->{begin}->{line};
+}
+
+my $pods = subroutine_pod($query_string);
+say "\npods";
+for (@$pods) {
+    say "- " . $_->{file}. " : ". $_->{location}->{begin}->{line};
+    say "\n". $_->{title}. "\n". $_->{text}."\n************************\n";
+}
