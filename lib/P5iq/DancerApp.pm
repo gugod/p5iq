@@ -28,17 +28,26 @@ get '/' => sub {
         }
     }
 
-    template 'index', {
+    my $stash = {
         'query' => $query,
         'search_args' => $search_args,
         'results' => $res,
         'freq_hash_keys' => $freq_hash_keys_res,
         'freq_invocant' => $freq_invocant_res,
         'freq_args' => $freq_args_res,
-        'projects'  => [map { +{ name => $_ } } @{P5iq::Search::list_project()}]
     };
+
+    fleshen_global_content($stash);
+
+    template 'index', $stash;
 };
 
+get "/project" => sub {
+    my $stash = {};
+    fleshen_global_content($stash);
+
+    template project => $stash;
+};
 
 my $default_call_back = sub {
     my $res = shift;
@@ -53,6 +62,21 @@ my $default_call_back = sub {
     }
     return \@ret;
 };
+
+sub fleshen_global_content {
+    my ($stash) = @_;
+    
+    my @projects = map {
+        +{
+            name => $_,
+            url  => uri_for("/project", {p => $_})
+       }
+    } @{P5iq::Search::list_project()};
+
+    $stash->{global_projects} = \@projects;
+
+    $stash->{global_search_query} = param("q");
+}
 
 sub locate_variable{
     my ($query, $args) = @_;

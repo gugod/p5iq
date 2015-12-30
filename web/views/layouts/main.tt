@@ -10,7 +10,7 @@
             <div id="global-search-box">
                 <form class="gsb" method="GET" action="/">
                     <div id="gsb-input">
-                        <input class="gsb" name="q" autofocus type="search" value="<% query %>">
+                        <input class="gsb" name="q" autofocus type="search" value="<% global_search_query %>">
                         <div class="addon">
                             <button class="gsb" type="submit">Search</button>
                         </div>
@@ -23,8 +23,8 @@
             <nav class="gs">
                 <h4>Projects</h4>
                 <ul>
-                    <% FOREACH project IN projects %>
-                    <li><% project.name %></li>
+                    <% FOREACH project IN global_projects %>
+                    <li><a href="<% project.url %>"><% project.name %></a></li>
                     <% END %>
                 </ul>
             </nav>
