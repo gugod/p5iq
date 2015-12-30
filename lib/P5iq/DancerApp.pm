@@ -14,22 +14,19 @@ get '/' => sub {
     my $freq_hash_keys_res;
     my $freq_args_res;
     my $freq_invocant_res;
-    if($search_args =~ /^variable_/){
-        $res = locate_variable( $query, (substr $search_args, 9));
-        $freq_hash_keys_res = freq_hash_keys( $query );
-    }
-    elsif( $search_args =~ /^sub_/ ){
-        $res = locate_sub( $query, (substr $search_args, 4));
-        $freq_invocant_res = freq_invocant( $query );
-        $freq_args_res = freq_args( $query );
-    }
-    elsif( $search_args =~ /^value/ ){
-        $res = locate_value( $query, $search_args);
-    }
-    else{
-    }
 
-    my @projects = map { +{ name => $_ } } @{P5iq::Search::list_project()};
+    if (defined $search_args) {
+        if ($search_args =~ /^variable_/) {
+            $res = locate_variable( $query, (substr $search_args, 9));
+            $freq_hash_keys_res = freq_hash_keys( $query );
+        } elsif ( $search_args =~ /^sub_/ ) {
+            $res = locate_sub( $query, (substr $search_args, 4));
+            $freq_invocant_res = freq_invocant( $query );
+            $freq_args_res = freq_args( $query );
+        } elsif ( $search_args =~ /^value/ ) {
+            $res = locate_value( $query, $search_args);
+        }
+    }
 
     template 'index', {
         'query' => $query,
@@ -38,7 +35,7 @@ get '/' => sub {
         'freq_hash_keys' => $freq_hash_keys_res,
         'freq_invocant' => $freq_invocant_res,
         'freq_args' => $freq_args_res,
-        'projects'  => \@projects
+        'projects'  => [map { +{ name => $_ } } @{P5iq::Search::list_project()}]
     };
 };
 
