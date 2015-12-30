@@ -2,6 +2,8 @@ package P5iq::DancerApp;
 use Dancer2;
 
 use P5iq::Search;
+use P5iq::Info;
+
 use Data::Dumper;
 
 our $VERSION = '0.1';
@@ -43,9 +45,17 @@ get '/' => sub {
 };
 
 get "/project" => sub {
-    my $stash = {};
-    fleshen_global_content($stash);
+    my $project_name = params->{'p'};
+    my $project_info = P5iq::Info::project($project_name);
 
+    if (!$project_info) {
+        send_error("Not found", 404);
+    }
+
+    my $stash = {};
+    $stash->{project_info} = $project_info;
+
+    fleshen_global_content($stash);
     template project => $stash;
 };
 
@@ -65,7 +75,7 @@ my $default_call_back = sub {
 
 sub fleshen_global_content {
     my ($stash) = @_;
-    
+
     my @projects = map {
         +{
             name => $_,

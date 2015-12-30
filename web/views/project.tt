@@ -1,3 +1,17 @@
 <div class="content">
-    <h2>...</h2>
+
+    <h2>files (<% project_info.files_count %>)</h2>
+    <ul>
+        <% FOREACH file IN project_info.files %>
+        <li><% file.name %></li>
+        <% END %>
+    </ul>
+
+    <h2>packages</h2>
+    <ul>
+        <% FOREACH package IN project_info.packages %>
+        <li><% package.name %></li>
+        <% END %>
+    </ul>
+    
 </div>
