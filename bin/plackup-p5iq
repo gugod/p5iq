@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Cwd 'realpath';
+use FindBin;
+
+my $repodir = realpath("$FindBin::Bin/..");
+
+$ENV{PERL5LIB}="${repodir}/lib:${repodir}/local/lib/perl5";
+
+my $cmd_plackup = "${repodir}/local/bin/plackup";
+$cmd_plackup = "plackup" unless -f $cmd_plackup;
+
+chdir($repodir);
+system($^X, $cmd_plackup, "-s", "Gazelle", "web/app.psgi");

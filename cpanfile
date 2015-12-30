@@ -12,10 +12,11 @@ requires 'Parallel::ForkManager'  => 0;
 requires 'Pod::POM'               => 0;
 requires 'Sys::Info'              => 0;
 requires 'Sys::Info::Device::CPU' => 0;
-requires 'Twiggy'                 => 0;
 requires 'Plack::Runner'          => 0;
 requires 'YAML'                   => 0;
-requires 'Template::Toolkit'      => 0;
+requires 'Template'               => 0;
+requires 'Gazelle'                => 0;
+
 
 recommends "YAML"             => "0";
 recommends "URL::Encode::XS"  => "0";
