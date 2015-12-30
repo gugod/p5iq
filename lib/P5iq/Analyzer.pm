@@ -145,14 +145,16 @@ sub extract_subroutine {
     my $sub_nodes = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement::Sub') });
     return () unless $sub_nodes;
     for my $el (@$sub_nodes) {
+        my ($in_package) = $ppi_doc->line_to_sub($el->location->[0]);
         my $n = $el->name;
         my $d = {
             location      => TypeRangeLineColumn($el, $el->last_token),
             class         => 'P5iq::Subroutine',
             content       => $n // "",
             tags          => [
+                "package:name=${in_package}",
                 "subroutine:def",
-                (defined($n) ? "subroutine:name=$n" : "subroutine:unnamed")
+                (defined($n) ? "subroutine:name=$n" : "subroutine:unnamed"),
             ]
         };
         fleshen_scope_locations($d, $el);
