@@ -12,34 +12,57 @@ get '/' => sub {
     my $query = params->{'q'};
     my $search_args = params->{'search_args'};
 
-    my $res;
-    my $freq_hash_keys_res;
-    my $freq_args_res;
-    my $freq_invocant_res;
+    my $results;
+    my $freq_results;
 
-    if (defined $search_args) {
-        if ($search_args =~ /^variable_/) {
-            $res = locate_variable( $query, (substr $search_args, 9));
-            $freq_hash_keys_res = freq_hash_keys( $query );
-        } elsif ( $search_args =~ /^sub_/ ) {
-            $res = locate_sub( $query, (substr $search_args, 4));
-            $freq_invocant_res = freq_invocant( $query );
-            $freq_args_res = freq_args( $query );
-        } elsif ( $search_args =~ /^value/ ) {
-            $res = locate_value( $query, $search_args);
+    if (defined $search_args && length $search_args) {
+        if ($search_args eq "variable_lvalue") {
+            $results->{lvalue} = locate_variable( $query, 'lvalue' );
+            $freq_results->{hash_keys} = freq_hash_keys( $query );
         }
+
+        if ($search_args eq "variable_in-string") {
+            $results->{'in-string'} = locate_variable( $query, 'in-string' );
+            $freq_results->{hash_keys} = freq_hash_keys( $query );
+        }
+
+        if ( $search_args eq "sub_method" ) {
+            $results->{method} = locate_sub( $query, 'method' );
+            $freq_results->{invocant} = freq_invocant( $query );
+            $freq_results->{res} = freq_args( $query );
+        }
+
+        if ( $search_args eq "sub_function" ) {
+            $results->{function} = locate_sub( $query, 'function' );
+            $freq_results->{invocant} = freq_invocant( $query );
+            $freq_results->{res} = freq_args( $query );
+        }
+
+        if ( $search_args eq "value" ) {
+            $results->{value} = locate_value( $query, 'value');
+        }
+    }
+    elsif( defined $query && length $query ) {
+        $results->{lvalue} = locate_variable( $query, 'lvalue');
+        $results->{'in-string'} = locate_variable( $query, 'in-string');
+        $results->{method} = locate_sub( $query, 'method' );
+        $results->{function} = locate_sub( $query, 'function' );
+        $results->{value} = locate_value( $query, 'value' );
+
+        $freq_results->{hash_keys} = freq_hash_keys( $query );
+        $freq_results->{invocant} = freq_invocant( $query );
+        $freq_results->{res} = freq_args( $query );
     }
 
     my $stash = {
         'query' => $query,
         'search_args' => $search_args,
-        'results' => $res,
-        'freq_hash_keys' => $freq_hash_keys_res,
-        'freq_invocant' => $freq_invocant_res,
-        'freq_args' => $freq_args_res,
+        'results' => $results,
+        'freq_results' => $freq_results,
     };
 
     fleshen_global_content($stash);
+    get_result_abstract($results);
 
     template 'index', $stash;
 };
@@ -105,9 +128,9 @@ my $default_call_back = sub {
     foreach ( @{$res->{hits}{hits}} ){
         my $src = $_->{_source};
         push @ret, {
-            file => $src->{file},
-                 line_number  => $src->{line_number},
-                 content  => $src->{content},
+            file  => $src->{file},
+            start => $src->{location}->{begin}->{line},
+            end   => $src->{location}->{end}->{line},
         }
     }
     return \@ret;
@@ -201,6 +224,15 @@ sub freq_args {
             return \@ret;
         }
     );
+}
+
+sub get_result_abstract {
+    my ($results) = @_;
+    for my $type (keys %$results){
+        for my $res (@{$results->{$type}}){
+            $res->{content} = `sed -n '$res->{start}, $res->{end}p' $res->{file}`;
+        }
+    }
 }
 
 true;
