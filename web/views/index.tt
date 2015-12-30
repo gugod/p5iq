@@ -50,3 +50,10 @@
     <% END %>
 <% END %>
 </ul>
+
+<h4>Projects</h4>
+<ul class="projects">
+    <% FOREACH project IN projects %>
+        <li><% project.name %></li>
+    <% END %>
+</ul>

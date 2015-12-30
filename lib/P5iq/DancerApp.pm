@@ -29,6 +29,7 @@ get '/' => sub {
     else{
     }
 
+    my @projects = map { +{ name => $_ } } @{P5iq::Search::list_project()};
 
     template 'index', {
         'query' => $query,
@@ -37,6 +38,7 @@ get '/' => sub {
         'freq_hash_keys' => $freq_hash_keys_res,
         'freq_invocant' => $freq_invocant_res,
         'freq_args' => $freq_args_res,
+        'projects'  => \@projects
     };
 };
 

@@ -334,4 +334,28 @@ sub frequency_token_class {
     }, $cb);
 }
 
+sub list_project {
+    my @projects;
+    es_search({
+        body  => {
+            size  => 0,
+            query => { match_all => {} },
+            aggregations => {
+                projects => {
+                    terms => {
+                        field => "project",
+                    }
+                }
+            }
+        }
+    }, sub {
+        my $res = shift;
+        for (@{ $res->{aggregations}{projects}{buckets} }) {
+            push(@projects, $_->{key}) if $_->{key} ne "";
+        }
+    });
+
+    return \@projects;
+}
+
 1;
