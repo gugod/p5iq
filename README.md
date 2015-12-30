@@ -14,6 +14,11 @@ This can be controled with the following environment variable:
 
     cpanm -L local/ --installdeps .
 
+# Web UI
+
+    bin/p5iq-plackup
+    # open http://localhost:5000/
+
 # command synopsis
 
 ## Index some content
