@@ -1,0 +1,52 @@
+<form action="/" method=get>
+    <input type="text" name="q" value="<% query %>" size=100><br>
+    <h3>what do you want to search for: </h3>
+    <h4>variable: </h4>
+    <input type="radio" value="variable_lvalue" name="search_args" <% (search_args == "variable_lvalue") ? "checked" : "" %> />lvalue</input>
+    <input type="radio" value="variable_in-string" name="search_args" <% (search_args == "variable_in-string") ? "checked" : "" %> />in-string</input>
+    <br>
+    <h4>function and methods: </h4>
+    <input type="radio" value="sub_call" name="search_args" <% (search_args == "sub_call") ? "checked" : "" %> />call</input>
+    <input type="radio" value="sub_method" name="search_args" <% (search_args == "sub_method") ? "checked" : "" %> />method</input>
+    <input type="radio" value="sub_function" name="search_args" <% (search_args == "sub_function") ? "checked" : "" %> />function</input>
+    <br>
+    <h4>value: </h4>
+    <input type="radio" value="value" name="search_args" <% (search_args == "value") ? "checked" : "" %> />value</input>
+    <br>
+    <input type="submit" value="search">
+</form>
+
+<ul class=search_results>
+<% IF results.size %>
+    <% FOREACH result IN results %>
+        <li><% result.file %>:<% result.line_number %>  <% result.content %>
+    <% END %>
+<% END %>
+</ul>
+
+<ul class=freq_hash_keys>
+<% IF freq_hash_keys.size %>
+    <h4>this variable could be a hash, possible hash keys and count: </h4>
+    <% FOREACH result IN freq_hash_keys %>
+        <li><% result.doc_count %> : <% result.content%>
+    <% END %>
+<% END %>
+</ul>
+
+<ul class=freq_invocant>
+<% IF freq_invocant.size %>
+    <h4>all the invocants has this method: </h4>
+    <% FOREACH result IN freq_invocant %>
+        <li><% result.doc_count %> : <% result.content%>
+    <% END %>
+<% END %>
+</ul>
+
+<ul class=freq_args>
+<% IF freq_args.size %>
+    <h4>all the arguments: </h4>
+    <% FOREACH result IN freq_args %>
+        <li><% result.doc_count %> : <% result.content%>
+    <% END %>
+<% END %>
+</ul>
