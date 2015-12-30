@@ -2,26 +2,31 @@
     <input type="text" name="q" value="<% query %>" size=100><br>
     <h3>what do you want to search for: </h3>
     <h4>variable: </h4>
-    <input type="radio" value="variable_lvalue" name="search_args" <% (search_args == "variable_lvalue") ? "checked" : "" %> />lvalue</input>
-    <input type="radio" value="variable_in-string" name="search_args" <% (search_args == "variable_in-string") ? "checked" : "" %> />in-string</input>
+    <input type="radio" value="variable_lvalue" name="search_args" />lvalue
+    <input type="radio" value="variable_in-string" name="search_args" />in-string
     <br>
     <h4>function and methods: </h4>
-    <input type="radio" value="sub_call" name="search_args" <% (search_args == "sub_call") ? "checked" : "" %> />call</input>
-    <input type="radio" value="sub_method" name="search_args" <% (search_args == "sub_method") ? "checked" : "" %> />method</input>
-    <input type="radio" value="sub_function" name="search_args" <% (search_args == "sub_function") ? "checked" : "" %> />function</input>
+    <input type="radio" value="sub_call" name="search_args" />call
+    <input type="radio" value="sub_method" name="search_args" />method
+    <input type="radio" value="sub_function" name="search_args" />function
     <br>
     <h4>value: </h4>
-    <input type="radio" value="value" name="search_args" <% (search_args == "value") ? "checked" : "" %> />value</input>
+    <input type="radio" value="value" name="search_args" />value
     <br>
     <input type="submit" value="search">
 </form>
 
-<ul class=search_results>
-<% IF results.size %>
-    <% FOREACH result IN results %>
-        <li><% result.file %>:<% result.line_number %>  <% result.content %>
-    <% END %>
+<h4>Projects</h4>
+<ul>
+<% FOREACH project IN projects %>
+    <li><% project.name %></li>
 <% END %>
+</ul>
+
+<ul class="search_results">
+    <% FOREACH result IN results %>
+        <li><% result.file %>:<% result.line_number %>  <% result.content %></li>
+    <% END %>
 </ul>
 
 <ul class=freq_hash_keys>
@@ -49,11 +54,4 @@
         <li><% result.doc_count %> : <% result.content%>
     <% END %>
 <% END %>
-</ul>
-
-<h4>Projects</h4>
-<ul class="projects">
-    <% FOREACH project IN projects %>
-        <li><% project.name %></li>
-    <% END %>
 </ul>
