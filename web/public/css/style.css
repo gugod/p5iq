@@ -18,6 +18,7 @@ nav.gs li {
 }
 
 #global-search-box {
+    background: #fff;
     position: fixed;
     top: 0;
     left: 0;
