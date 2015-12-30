@@ -1,57 +1,52 @@
-<form action="/" method=get>
-    <input type="text" name="q" value="<% query %>" size=100><br>
-    <h3>what do you want to search for: </h3>
-    <h4>variable: </h4>
-    <input type="radio" value="variable_lvalue" name="search_args" />lvalue
-    <input type="radio" value="variable_in-string" name="search_args" />in-string
-    <br>
-    <h4>function and methods: </h4>
-    <input type="radio" value="sub_call" name="search_args" />call
-    <input type="radio" value="sub_method" name="search_args" />method
-    <input type="radio" value="sub_function" name="search_args" />function
-    <br>
-    <h4>value: </h4>
-    <input type="radio" value="value" name="search_args" />value
-    <br>
-    <input type="submit" value="search">
-</form>
+<div class="content">
+      <h4>Filters</h4>
+      <form method="GET" action="/">
+          <input name="q" type="hidden" value="<% query %>">
+          <h3>what do you want to search for: </h3>
+          <h4>variable: </h4>
+          <input type="radio" value="variable_lvalue" name="search_args" />lvalue
+          <input type="radio" value="variable_in-string" name="search_args" />in-string
 
-<h4>Projects</h4>
-<ul>
-<% FOREACH project IN projects %>
-    <li><% project.name %></li>
-<% END %>
-</ul>
+          <h4>function and methods: </h4>
+          <input type="radio" value="sub_call" name="search_args" />call
+          <input type="radio" value="sub_method" name="search_args" />method
+          <input type="radio" value="sub_function" name="search_args" />function
 
-<ul class="search_results">
-    <% FOREACH result IN results %>
-        <li><% result.file %>:<% result.line_number %>  <% result.content %></li>
-    <% END %>
-</ul>
+          <h4>value: </h4>
+          <input type="radio" value="value" name="search_args" />value
+          <button type="submit">Search</button>
+      </form>
 
-<ul class=freq_hash_keys>
-<% IF freq_hash_keys.size %>
-    <h4>this variable could be a hash, possible hash keys and count: </h4>
-    <% FOREACH result IN freq_hash_keys %>
-        <li><% result.doc_count %> : <% result.content%>
-    <% END %>
-<% END %>
-</ul>
+      <ul class="search_results">
+          <% FOREACH result IN results %>
+          <li><% result.file %>:<% result.line_number %>  <% result.content %></li>
+          <% END %>
+      </ul>
 
-<ul class=freq_invocant>
-<% IF freq_invocant.size %>
-    <h4>all the invocants has this method: </h4>
-    <% FOREACH result IN freq_invocant %>
-        <li><% result.doc_count %> : <% result.content%>
-    <% END %>
-<% END %>
-</ul>
+      <ul class=freq_hash_keys>
+          <% IF freq_hash_keys.size %>
+          <h4>this variable could be a hash, possible hash keys and count: </h4>
+          <% FOREACH result IN freq_hash_keys %>
+          <li><% result.doc_count %> : <% result.content%>
+              <% END %>
+              <% END %>
+      </ul>
 
-<ul class=freq_args>
-<% IF freq_args.size %>
-    <h4>all the arguments: </h4>
-    <% FOREACH result IN freq_args %>
-        <li><% result.doc_count %> : <% result.content%>
-    <% END %>
-<% END %>
-</ul>
+      <ul class=freq_invocant>
+          <% IF freq_invocant.size %>
+          <h4>all the invocants has this method: </h4>
+          <% FOREACH result IN freq_invocant %>
+          <li><% result.doc_count %> : <% result.content%>
+              <% END %>
+              <% END %>
+      </ul>
+
+      <ul class=freq_args>
+          <% IF freq_args.size %>
+          <h4>all the arguments: </h4>
+          <% FOREACH result IN freq_args %>
+          <li><% result.doc_count %> : <% result.content%>
+              <% END %>
+              <% END %>
+      </ul>
+</div>

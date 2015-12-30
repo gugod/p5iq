@@ -1,189 +1,75 @@
-
 body {
-margin: 0;
-margin-bottom: 25px;
-padding: 0;
-background-color: #ddd;
-background-image: url("/images/perldancer-bg.jpg");
-background-repeat: no-repeat;
-background-position: top left;
-
-font-family: "Lucida Grande", "Bitstream Vera Sans", "Verdana";
-font-size: 13px;
-color: #333;
+    font-size: 14px;
+}
+footer {
+    bottom: 0;
 }
 
-h1 {
-font-size: 28px;
-color: #000;
+#global-sidebar {
+    position: fixed;
+    top: 85px;
+    width: 250px;
+    height: 100%;
+    border-right: 2px solid #ccc;
 }
 
-a  {color: #03c}
-a:hover {
-background-color: #03c;
-color: white;
-text-decoration: none;
+nav.gs li {
+    margin: 5px 0;
 }
 
-#page {
-background-color: #ddd;
-width: 750px;
-margin: auto;
-margin-left: auto;
-padding-left: 0px;
-margin-right: auto;
+#global-search-box {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 85px;
+    width: 100%;
+    border-bottom: 2px solid #ccc;
 }
 
-#content {
-background-color: white;
-border: 3px solid #aaa;
-border-top: none;
-padding: 25px;
-width: 500px;
+#gsb-input {
+    margin: 14px 0 0 10%;
+    box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
+    width: 85%;
+    display: table;
 }
 
-#sidebar {
-float: right;
-width: 175px;
+#gsb-input .addon {
+    width: 1%;
+    display: table-cell;
+    vertical-align: middle;
 }
 
-#header, #about, #getting-started {
-padding-left: 75px;
-padding-right: 30px;
+input.gsb {
+    padding: 0 7px;
+    font-size: 18px;
+    height: 55px;
+    vertical-align: middle;
+    border: 1px solid #ccc;
+    border-radius: 3px 0 0 3px;
+    display: table-cell;
+    width: 100%;
 }
 
-
-#header {
-background-image: url("/images/perldancer.jpg");
-background-repeat: no-repeat;
-background-position: top left;
-height: 64px;
-}
-#header h1, #header h2 {margin: 0}
-#header h2 {
-color: #888;
-font-weight: normal;
-font-size: 16px;
+button.gsb[type=submit] {
+    background: #09f;
+    color: #FFF;
+    border-radius: 0 3px 3px 0;
+    height: 55px;
+    width: 75px;
 }
 
-#about h3 {
-margin: 0;
-margin-bottom: 10px;
-font-size: 14px;
+#global-content {
+    margin-top: 100px;
+    margin-left: 250px;
 }
 
-#about-content {
-background-color: #ffd;
-border: 1px solid #fc0;
-margin-left: -11px;
-}
-#about-content table {
-margin-top: 10px;
-margin-bottom: 10px;
-font-size: 11px;
-border-collapse: collapse;
-}
-#about-content td {
-padding: 10px;
-padding-top: 3px;
-padding-bottom: 3px;
-}
-#about-content td.name  {color: #555}
-#about-content td.value {color: #000}
-
-#about-content.failure {
-background-color: #fcc;
-border: 1px solid #f00;
-}
-#about-content.failure p {
-margin: 0;
-padding: 10px;
+.content {
+    margin: 18px;
 }
 
-#getting-started {
-border-top: 1px solid #ccc;
-margin-top: 25px;
-padding-top: 15px;
-}
-#getting-started h1 {
-margin: 0;
-font-size: 20px;
-}
-#getting-started h2 {
-margin: 0;
-font-size: 14px;
-font-weight: normal;
-color: #333;
-margin-bottom: 25px;
-}
-#getting-started ol {
-margin-left: 0;
-padding-left: 0;
-}
-#getting-started li {
-font-size: 18px;
-color: #888;
-margin-bottom: 25px;
-}
-#getting-started li h2 {
-margin: 0;
-font-weight: normal;
-font-size: 18px;
-color: #333;
-}
-#getting-started li p {
-color: #555;
-font-size: 13px;
+footer {
+    margin: 18px;
+    border-top: 1px solid #ccc;
 }
 
-#search {
-margin: 0;
-padding-top: 10px;
-padding-bottom: 10px;
-font-size: 11px;
-}
-#search input {
-font-size: 11px;
-margin: 2px;
-}
-#search-text {width: 170px}
-
-#sidebar ul {
-margin-left: 0;
-padding-left: 0;
-}
-#sidebar ul h3 {
-margin-top: 25px;
-font-size: 16px;
-padding-bottom: 10px;
-border-bottom: 1px solid #ccc;
-}
-#sidebar li {
-list-style-type: none;
-}
-#sidebar ul.links li {
-margin-bottom: 5px;
-}
-
-h1, h2, h3, h4, h5 {
-font-family: sans-serif;
-margin: 1.2em 0 0.6em 0;
-}
-
-p {
-line-height: 1.5em;
-margin: 1.6em 0;
-}
-
-code, tt {
-    font-family: 'Andale Mono', Monaco, 'Liberation Mono', 'Bitstream Vera Sans Mono', 'DejaVu Sans Mono', monospace;
-}
-
-#footer {
-clear: both;
-padding-top: 2em;
-text-align: center;
-padding-right: 160px;
-font-family: sans-serif;
-font-size: 10px;
-}
