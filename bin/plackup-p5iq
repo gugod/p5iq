@@ -14,4 +14,4 @@ my $cmd_plackup = "${repodir}/local/bin/plackup";
 $cmd_plackup = "plackup" unless -f $cmd_plackup;
 
 chdir($repodir);
-system($^X, $cmd_plackup, "-s", "Gazelle", "web/app.psgi");
+system($^X, $cmd_plackup, "-s", "Gazelle", "-R" => "$repodir/lib,$repodir/local/lib/perl5", "web/app.psgi");
