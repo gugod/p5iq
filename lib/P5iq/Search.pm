@@ -100,26 +100,94 @@ sub locate_value {
 sub locate_sub {
     my ($args, $query_string, $cb) = @_;
 
+    if ($args->{call}) {
+        locate_sub_call($args, $query_string, $cb);
+        return;
+    }
+
     my @conditions = (
-        (defined($query_string) ? { term => { tags => "subroutine:name=$query_string" } } : ()),
         (defined($args->{in})   ? { prefix => { file => $args->{in}  } }   : ()),
     );
 
-    if ($args->{call}) {
-        push @conditions, { term => { tags => "subroutine:call" } };
-    } elsif ($args->{function}) {
+    if ($args->{function}) {
         push @conditions, { term => { tags => "function:call" } };
+        push @conditions, { term => { tags => "function:name=$query_string" } };
     } elsif ($args->{method}) {
         push @conditions, { term => { tags => "method:call" } };
+        push @conditions, { term => { tags => "method:name=$query_string" } };
     } else {
         push @conditions, { term => { tags => "subroutine:def" } };
+        push @conditions, { term => { tags => "subroutine:name=$query_string" } };
     }
 
     es_search({
         body  => {
             size  => $args->{size} // 25,
             query => {
-                bool => { must => \@conditions }
+                bool => {
+                    must => \@conditions
+                }
+            }
+        }
+    }, $cb);
+}
+
+sub locate_sub_call {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        (defined($args->{in})   ? { prefix => { file => $args->{in}  } }   : ()),
+    );
+
+    es_search({
+        body  => {
+            size  => $args->{size} // 25,
+            query => {
+                bool => {
+                    should => [
+                        {
+                            bool => {
+                                must => [
+                                    { term => { tags => "function:call" } },
+                                    { term => { tags => "function:name=$query_string" } }
+                                ]
+                            }
+                        },
+                        {
+                            bool => {
+                                must => [
+                                    { term => { tags => "method:call" } },
+                                    { term => { tags => "method:name=$query_string" } }
+                                ]
+                            }
+                        }
+                    ],
+                    must => \@conditions
+                }
+            }
+        }
+    }, $cb);
+}
+
+sub locate_pod {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        (defined($args->{in})     ? { prefix => { file => $args->{in}  } }   : ())
+    );
+
+    es_search({
+        type => "p5_pod",
+        body => {
+            size  => $args->{size} // 25,
+            query => {
+                bool => {
+                    should => [
+                        { term => {title => $query_string} },
+#                        { term => {text  => $query_string} },
+                    ],
+                    must => \@conditions
+                }
             }
         }
     }, $cb);
