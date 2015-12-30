@@ -17,7 +17,7 @@ sub analyze_for_index {
         p5_token => [
             extract_token($ppi_doc),
         ],
-        p5_node => [
+        p5_structure => [
             extract_subscript($ppi_doc),
         ],
         p5_sub => [

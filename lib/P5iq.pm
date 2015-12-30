@@ -60,10 +60,8 @@ sub create_index_if_not_exist {
                 "index.mapper.dynamic" => 0
             },
             mappings => {
-                p5_node => { properties => {
-                    (@GenericFields),
-                    token_content => { "type" => "string" },
-                    token_class   => { "type" => "string","index" => "not_analyzed" },
+                p5_structure => { properties => {
+                    @GenericFields
                 } },
                 p5_token => { properties => { @GenericFields } },
                 p5_sub => { properties => {
