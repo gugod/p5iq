@@ -1,4 +1,5 @@
 requires "Dancer2"                => "0.159002";
+requires 'Clone::PP'              => 0;
 requires 'DDP'                    => 0;
 requires 'Elastijk'               => 0;
 requires 'File::Next'             => 0;

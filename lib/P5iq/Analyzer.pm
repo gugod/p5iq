@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use List::MoreUtils qw(uniq);
 use Data::Dumper;
-use Storable 'dclone';
+use Clone::PP 'clone';
 use Pod::POM;
 use Pod::POM::View::Text;
 
@@ -329,7 +329,7 @@ sub extract_token {
                 for my $y ( $in_string_ppi_doc->tokens ) {
                     next unless $y->significant;
                     if ( ref($y) eq 'PPI::Token::Symbol' ) {
-                        my $doc_t = dclone $doc;
+                        my $doc_t = clone $doc;
                         $doc_t->{content} = $y->content;
                         $doc_t->{class} = $y->class;
                         push @{$doc_t->{tags}}, (
@@ -385,13 +385,13 @@ sub extract_pod{
             my $pom = $parser->parse_text( $x->{content} );
             my $text_view = 'Pod::POM::View::Text';
             foreach my $s ( @{$pom->head1()} ) {
-                my $doc_t = dclone $doc;
+                my $doc_t = clone $doc;
                 $doc_t->{title} = $s->title()->present($text_view);
                 $doc_t->{text} = $s->text()->present($text_view);
                 push @{$doc_t->{tags}}, 'pod:head1';
                 push @doc, $doc_t;
                 foreach my $ss ($s->head2()) {
-                    my $doc_t = dclone $doc;
+                    my $doc_t = clone $doc;
                     $doc_t->{title} = $ss->title()->present($text_view);
                     $doc_t->{text} = $ss->text()->present($text_view);
                     push @{$doc_t->{tags}}, 'pod:head2';
