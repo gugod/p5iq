@@ -11,13 +11,11 @@ my $appdir = $FindBin::Bin;
 
 $ENV{DANCER_CONFDIR} = $appdir;
 $ENV{DANCER_ENVDIR} = "$appdir/environments";
+$ENV{DANCER_PUBLIC} = "$appdir/public";
+$ENV{DANCER_VIEWS}  = "$appdir/views";
 
 require P5iq::DancerApp;
-P5iq::DancerApp->import( with => {
-    appdir => $appdir,
-    views  => "${appdir}/views",
-    public_dir => "${appdir}/public",
-});
+P5iq::DancerApp->import( with => { appdir => $appdir} );
 
 P5iq::DancerApp->psgi_app;
 
