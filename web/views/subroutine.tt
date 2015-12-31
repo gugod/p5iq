@@ -6,6 +6,13 @@
     <% END %>
     </ul>
 
+    <h4>dependencies</h4>
+    <ul>
+    <% FOREACH thing IN subroutine_info.dependencies %>
+    <li><a href="<% thing.url %>"><% thing.gist %></a></li>
+    <% END %>
+    </ul>
+
     <h4>use cases: function calls </h4>
     <ul>
     <% FOREACH thing IN subroutine_info.function_calls %>

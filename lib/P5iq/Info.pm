@@ -31,6 +31,7 @@ sub subroutine {
     __fleshen_subroutine_info_definitions($info, $name, $options);
     __fleshen_subroutine_info_function_calls($info, $name, $options);
     __fleshen_subroutine_info_method_invocations($info, $name, $options);
+    __fleshen_subroutine_info_dependencies($info, $name, $options);
     return undef if keys %$info == 0;
     return $info;
 }
@@ -310,6 +311,41 @@ sub __fleshen_subroutine_info_method_invocations {
                 };
             }
             $info->{method_invocations} = \@x;
+        }
+    });
+}
+
+sub __fleshen_subroutine_info_dependencies {
+    my ($info, $name, $options) = @_;
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
+                        # (defined($options->{package}) ? { term => { tags => "in:package=".$options->{package} } } : ()),
+                        { term => { tags => "in:sub=$name" } },
+                        { terms => { tags => ["function:call", "method:call"]} },
+                    ]
+                }
+            },
+            size => 25,
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            my @x;
+            for (@{ $res->{hits}{hits} }) {
+                my $src = $_->{_source};
+                next unless defined($src->{gist});
+                push @x, {
+                    gist => $src->{gist},
+                    file => $src->{file},
+                    location => $src->{location},
+                };
+            }
+            $info->{dependencies} = \@x;
         }
     });
 }
