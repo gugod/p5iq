@@ -17,11 +17,13 @@ use constant NCPU => Sys::Info->new->device('CPU')->count;
 sub is_perl {
     my ($file) = @_;
 
-    return 1 if $file =~ / \.p[ml] $/x;
-    return if $file =~ / \.swp $/x;
-    if (open my $fh, '<', $file) {
-        my $line = <$fh>;
-        return 1 if $line =~ m{^#!.*perl};
+    return 1 if $file =~ / \.(?: t|p[ml] ) $/xi;
+    return if $file =~ / \.(?: swp) $/xi;
+    if ($file !~ /\./) {
+        if (open my $fh, '<', $file) {
+            my $line = <$fh>;
+            return 1 if $line =~ m{^#!.*perl};
+        }
     }
     return;
 }
@@ -145,7 +147,7 @@ sub index_git_recent_changes {
                 }
             }
         );
-    }    
+    }
 }
 
 sub process_git_dir {
