@@ -13,5 +13,12 @@
         <li><a href="<% file.url %>"><% file.name %></a></li>
         <% END %>
     </ul>
-    
+
+    <h2>subroutines</h2>
+    <ul>
+        <% FOREACH thing IN project_info.subroutines %>
+        <li><a href="<% thing.url %>"><% thing.name %></a></li>
+        <% END %>
+    </ul>
+
 </div>

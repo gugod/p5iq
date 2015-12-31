@@ -10,6 +10,7 @@ sub project {
     my $info = {};
     __fleshen_project_info_files($info, $project_name);
     __fleshen_project_info_packages($info, $project_name);
+    __fleshen_project_info_subroutines($info, $project_name);
     return undef if keys %$info == 0;
     return $info;
 }
@@ -89,6 +90,34 @@ sub __fleshen_project_info_files {
     });
 }
 
+sub __fleshen_project_info_subroutines {
+    my ($info, $name, $options) = @_;
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        { term => { project => $name } },
+                        { term => { tags    => "subroutine:def" } },
+                    ]
+                }
+            },
+            size => 0,
+            aggregations => {
+                subroutines => {
+                    terms => { field => "tags", include => "subroutine:name=.*", size => 0 },
+                }
+            }
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            $info->{subroutines} = [ map { +{ name => substr($_->{key}, 16) } } @{ $res->{aggregations}{subroutines}{buckets} } ];
+        }
+    });
+}
+
 sub __fleshen_package_info_files {
     my ($info, $name, $options) = @_;
 
@@ -131,8 +160,8 @@ sub __fleshen_package_info_subroutines {
                 bool => {
                     must => [
                         (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
-                        { term => { tags    => "subroutine:def" } },
-                        { term => { tags    => "package:name=$name" } },
+                        { term => { tags => "subroutine:def" } },
+                        { term => { tags => "package:name=$name" } },
                     ]
                 }
             },
