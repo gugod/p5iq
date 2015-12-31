@@ -81,6 +81,12 @@ get "/project" => sub {
         }
     }
 
+    if ($project_info->{subroutines}) {
+        for (@{$project_info->{subroutines}}) {
+            $_->{url} = uri_for("/subroutine", { project => $project_name, n => $_->{name} });
+        }
+    }
+
     my $stash = {};
     $stash->{project_info} = $project_info;
 
