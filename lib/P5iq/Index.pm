@@ -29,13 +29,25 @@ sub is_perl {
 sub scan_this_dir {
     my ($srcdir, $cb) = @_;
 
+    $srcdir =~ s!/+\z!!;
+
     my $forkman = Parallel::ForkManager->new( NCPU - 1 );
 
-    my $files = File::Next::files({ file_filter => sub { is_perl($File::Next::name) } }, $srcdir);
-    while ( defined ( my $file = $files->() ) ) {
-        $forkman->start and next;
-        $cb->($file);
-        $forkman->finish;
+    if (-d "$srcdir/.git") {
+        my $git = Git::Wrapper->new($srcdir);
+        my @files = $git->RUN("ls-files");
+        for my $file (grep { is_perl($_) } map { "$srcdir/$_" } @files) {
+            $forkman->start and next;
+            $cb->($file);
+            $forkman->finish;
+        }
+    } else {
+        my $files = File::Next::files({ file_filter => sub { is_perl($File::Next::name) } }, $srcdir);
+        while ( defined ( my $file = $files->() ) ) {
+            $forkman->start and next;
+            $cb->($file);
+            $forkman->finish;
+        }
     }
     $forkman->wait_all_children;
 }
