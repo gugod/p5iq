@@ -36,9 +36,9 @@ sub scan_this_dir {
     if (-d "$srcdir/.git") {
         my $git = Git::Wrapper->new($srcdir);
         my @files = $git->RUN("ls-files");
-        for my $file (grep { is_perl($_) } map { "$srcdir/$_" } @files) {
+        for my $file (map { "$srcdir/$_" } @files) {
             $forkman->start and next;
-            $cb->($file);
+            $cb->($file) if is_perl($file);
             $forkman->finish;
         }
     } else {
