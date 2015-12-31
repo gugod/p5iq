@@ -118,7 +118,7 @@ get "/package" => sub {
 
     if ($package_info->{files}) {
         for (@{$package_info->{files}}) {
-            $_->{url} = uri_for("/file", { name=> $_->{name}, start => 1 });
+            $_->{url} = uri_for("/file", { name=> $_->{name} });
         }
     }
 
