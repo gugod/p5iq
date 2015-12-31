@@ -202,6 +202,7 @@ sub extract_method_calls {
                 ( $invocant =~ /\A\w+ (:: \w+)* (::)?\z/x ? "method:class" : () ),
             ],
         };
+        fleshen_line_to_sub_tags($d, $ppi_doc, $method);
         fleshen_scope_locations($d, $s->parent);
         push @doc, $d;
     }
@@ -228,16 +229,18 @@ sub extract_function_calls {
         my (@ns) = split(/::/, "$s");
         my $name = pop(@ns);
         my $namespace = join("::", @ns);
-        push @doc, {
+        my $d = {
             content       => [ (@ns ? "$s" :""), "$name", @arglist_tokens ],
             class         => 'P5iq::FunctionCall',
             location      => TypeRangeLineColumn($s, $args->last_token),
             tags          => [
                 "function:call",
                 "function:namespace=$namespace",
-                "function:name=$name"
+                "function:name=$name",
             ],
         };
+        fleshen_line_to_sub_tags($d, $ppi_doc, $s);
+        push @doc, $d;
     }
 
     # TODO: Look for all "word followed by a list not within parenthesis"
@@ -370,6 +373,13 @@ sub fleshen_scope_locations {
         $el = $el->parent;
     }
     return \@loc;
+}
+
+sub fleshen_line_to_sub_tags {
+    my ($doc, $ppi_doc, $ppi_element) = @_;
+    my ($in_package, $in_sub) = $ppi_doc->line_to_sub($ppi_element->location->[0]);
+    push(@{$doc->{tags}}, "in:sub=${in_sub}", "in:package=${in_package}");
+    return;
 }
 
 sub extract_pod {
