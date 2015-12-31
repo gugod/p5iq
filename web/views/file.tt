@@ -1,6 +1,6 @@
 <div class="content">
     <ul>
-        <% file %>: <% start_ln %>/<% end_ln %>
+        <% name %>: <% start_ln %>/<% end_ln %>
     </ul>
     <code><% abstract %></code>
 </div>
