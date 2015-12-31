@@ -291,6 +291,9 @@ sub __fleshen_subroutine_info_method_invocations {
                         { term => { tags => "method:call" } },
                         { term => { tags => "method:name=$name" } },
                     ],
+                    (defined($options->{package}) ? (
+                        should => [ { term => { tags => "method:invocant=" . $options->{package} } } ]
+                    ):())
                 }
             },
             size => 25,
