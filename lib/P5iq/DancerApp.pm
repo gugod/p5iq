@@ -111,7 +111,13 @@ get "/package" => sub {
 };
 
 get "/subroutine" => sub {
-    my $stash = {};
+    my $subroutine_name = params->{n};
+    my $project_name = params->{project};
+    my $package_name = params->{package};
+
+    my $subroutine_info = P5iq::Info::subroutine($subroutine_name, { package => $package_name, project => $project_name });
+
+    my $stash = { subroutine_info => $subroutine_info };
     fleshen_global_content($stash);
     template subroutine => $stash;
 };

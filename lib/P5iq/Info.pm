@@ -23,6 +23,15 @@ sub package {
     return $info;
 }
 
+sub subroutine {
+    my ($name, $options) = @_;
+    my $info = {};
+    __fleshen_subroutine_info_definitions($info, $name, $options);
+
+    return undef if keys %$info == 0;
+    return $info;
+}
+
 sub __fleshen_project_info_packages {
     my ($info, $project_name) = @_;
     P5iq::Search::es_search({
@@ -114,7 +123,6 @@ sub __fleshen_package_info_files {
 sub __fleshen_package_info_subroutines {
     my ($info, $name, $options) = @_;
 
-
     P5iq::Search::es_search({
         body => {
             query => {
@@ -144,5 +152,37 @@ sub __fleshen_package_info_subroutines {
     });
 }
 
+sub __fleshen_subroutine_info_definitions {
+    my ($info, $name, $options) = @_;
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
+                        (defined($options->{package}) ? { term => { tags => "package:name=".$options->{package} } } : ()),
+                        { term => { tags    => "subroutine:def" } },
+                        { term => { content => $name } },
+                    ]
+                }
+            },
+            size => 25,
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            my @defs;
+            for (@{ $res->{hits}{hits} }) {
+                my $src = $_->{_source};
+                push @defs, {
+                    file => $src->{file},
+                    location => $src->{location},
+                };
+            }
+            $info->{definitions} = \@defs;
+        }
+    });
+}
 
 1;
