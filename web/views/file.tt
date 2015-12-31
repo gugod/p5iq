@@ -1,0 +1,6 @@
+<div class="content">
+    <ul>
+    <% file %>: <% sln %>/<% eln %>
+    </ul>
+    <% abstract %>
+</div>

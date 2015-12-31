@@ -62,7 +62,7 @@ get '/' => sub {
     };
 
     fleshen_global_content($stash);
-    get_result_abstract($results);
+    fleshen_file_url($results);
 
     template 'index', $stash;
 };
@@ -126,6 +126,29 @@ get "/nothing" => sub {
     my $stash = {};
     fleshen_global_content($stash);
     template nothing => $stash;
+};
+
+get "/file" => sub {
+    my $file = params->{fn};
+    my $start = params->{start};
+    my $end = params->{end};
+  
+    my $total_line_number = `wc -l < $file`;
+    if( !$end || $end == $start ){
+        my $tmp = $start;
+        $start = ($tmp - 2) < 1 ? 1 : ($tmp - 2);
+        $end = ($tmp + 2) > $total_line_number ? $total_line_number : ($tmp + 2);
+    }
+    my $abstract = `sed -n '$start, ${end}p' $file`;
+
+    my $stash = {
+        file => $file,
+        sln => $start,
+        eln => $end,
+        abstract => $abstract,
+    };
+    fleshen_global_content($stash);
+    template file => $stash;
 };
 
 my $default_call_back = sub {
@@ -232,13 +255,20 @@ sub freq_args {
     );
 }
 
-sub get_result_abstract {
+sub fleshen_file_url{
     my ($results) = @_;
     for my $type (keys %$results){
         for my $res (@{$results->{$type}}){
-            $res->{content} = `sed -n '$res->{start}, $res->{end}p' $res->{file}`;
+            $res->{url} = uri_for("/file", 
+                { 
+                    fn => $res->{file}, 
+                    start => $res->{start},
+                    end => $res->{end},
+                }
+            );
         }
     }
 }
+
 
 true;
