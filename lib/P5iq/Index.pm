@@ -18,14 +18,14 @@ sub is_perl {
     my ($file) = @_;
 
     return 1 if $file =~ / \.(?: t|p[ml]|pm6|pod|comp ) $/xi;
-    return if $file =~ / \.(?: swp) $/xi;
-    if ($file !~ /\./) {
-        if (open my $fh, '<', $file) {
-            my $line = <$fh>;
-            return 1 if $line =~ m{^#!.*perl};
-        }
+    return 0 if $file =~ / \. /xi;
+
+    if (open my $fh, '<', $file) {
+        my $line = <$fh>;
+        return 1 if $line =~ m{^#!.*perl};
     }
-    return;
+
+    return 0;
 }
 
 sub scan_this_dir {
