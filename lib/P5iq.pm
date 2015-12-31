@@ -48,6 +48,7 @@ sub create_index_if_not_exist {
         file          => { "type" => "string", "index" => "not_analyzed" },
         class         => { "type" => "string", "index" => "not_analyzed" },
         content       => { "type" => "string", "index" => "not_analyzed" },
+        gist          => { "type" => "string", "index" => "not_analyzed" },
         tags          => { "type" => "string","index" => "not_analyzed" },
         location      => $TypeRangeLineColumn,
         scope         => $TypeRangeLineColumn,
