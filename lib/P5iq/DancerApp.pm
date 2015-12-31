@@ -4,6 +4,7 @@ use Dancer2;
 use P5iq::Search;
 use P5iq::Info;
 
+use HTML::Escape qw/escape_html/;
 use Data::Dumper;
 
 our $VERSION = '0.1';
@@ -144,19 +145,21 @@ get "/file" => sub {
     my $file = params->{fn};
     my $start = params->{start};
     my $end = params->{end};
-
-    my $total_line_number = `wc -l < $file`;
-    if( !$end || $end == $start ){
-        my $tmp = $start;
-        $start = ($tmp - 2) < 1 ? 1 : ($tmp - 2);
-        $end = ($tmp + 2) > $total_line_number ? $total_line_number : ($tmp + 2);
+  
+    my $total_line_number = `wc -l < $file | tr -d '\n'`;
+    my $sln = $start;
+    my $eln = $end;
+    if( !$eln || $eln == $sln){
+        my $tmp = $sln;
+        $sln = ($tmp - 2) < 1 ? 1 : ($tmp - 2);
+        $eln= ($tmp + 2) > $total_line_number ? $total_line_number : ($tmp + 2);
     }
-    my $abstract = `sed -n '$start, ${end}p' $file`;
-
+    my $abstract = `sed -n '$sln, $eln p' $file`;
+    escape_html( $abstract );
     my $stash = {
         file => $file,
-        sln => $start,
-        eln => $end,
+        start_ln => $start,
+        end_ln => $end,
         abstract => $abstract,
     };
     fleshen_global_content($stash);
