@@ -86,7 +86,7 @@ sub delete_by_file {
         }
     );
 
-    while (my @batch = splice(@todo, 0, 1000)) {
+    while (my @batch = splice(@todo, 0, 10000)) {
         say "[$$] delete\t$file\told features: " . scalar(@batch);
         $es->bulk(
             index => P5iq::idx(),
