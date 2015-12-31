@@ -109,6 +109,12 @@ get "/package" => sub {
         }
     }
 
+    if ($package_info->{dependencies}) {
+        for (@{$package_info->{dependencies}}) {
+            $_->{url} = uri_for("/package", { project => $project_name, n => $_->{name} });
+        }
+    }
+
     my $stash = {};
     $stash->{package_info} = $package_info;
 
@@ -138,7 +144,7 @@ get "/file" => sub {
     my $file = params->{fn};
     my $start = params->{start};
     my $end = params->{end};
-  
+
     my $total_line_number = `wc -l < $file`;
     if( !$end || $end == $start ){
         my $tmp = $start;
@@ -265,9 +271,9 @@ sub fleshen_file_url{
     my ($results) = @_;
     for my $type (keys %$results){
         for my $res (@{$results->{$type}}){
-            $res->{url} = uri_for("/file", 
-                { 
-                    fn => $res->{file}, 
+            $res->{url} = uri_for("/file",
+                {
+                    fn => $res->{file},
                     start => $res->{start},
                     end => $res->{end},
                 }
