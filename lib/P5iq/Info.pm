@@ -246,10 +246,9 @@ sub __fleshen_subroutine_info_method_invocations {
                     location => $src->{location},
                 };
             }
-            $info->{function_calls} = \@x;
+            $info->{method_invocations} = \@x;
         }
     });
 }
-
 
 1;
