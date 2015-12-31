@@ -108,6 +108,7 @@ sub extract_statements {
     my ($ppi_doc) = @_;
     my @doc;
     my $statements = $ppi_doc->find(sub { $_[1]->isa('PPI::Statement') });
+    return @doc unless $statements;
     for my $s (@$statements) {
         push @doc, {
             class    => $s->class,
