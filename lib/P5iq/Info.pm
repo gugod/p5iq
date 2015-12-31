@@ -130,10 +130,7 @@ sub __fleshen_package_info_subroutines {
                     must => [
                         (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
                         { term => { tags    => "subroutine:def" } },
-
-                        # XXX: Bad -- rewrite this by populating "package:name" in analyer.
-                        { terms => { file => [ map { $_->{name} } @{$info->{files}} ] } },
-                        # XXX: by then, replace the line above with: { term => { tags    => "package:name=$name" } },
+                        { term => { tags    => "package:name=$name" } },
                     ]
                 }
             },
