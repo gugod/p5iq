@@ -22,7 +22,7 @@
                 <% pair.key %>
                 <ul class=pair.key>
                 <%FOREACH result IN pair.value %>
-                    <li><% result.file %>: <% result.content %></li>
+                    <li><a href="<% result.url %>"><% result.file %>: <% result.start %>/<% result.end %></a></li>
                 <% END %>
                 </ul>
             <% END %>
