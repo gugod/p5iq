@@ -19,6 +19,7 @@ sub package {
     my $info = {};
     __fleshen_package_info_files($info, $name, $options);
     __fleshen_package_info_subroutines($info, $name, $options);
+    __fleshen_package_info_dependencies($info, $name, $options);
     return undef if keys %$info == 0;
     return $info;
 }
@@ -146,6 +147,36 @@ sub __fleshen_package_info_subroutines {
         my $res = shift;
         if ($res->{hits}{total} > 0) {
             $info->{subroutines} = [ map { +{ name => substr($_->{key}, 16) } } @{ $res->{aggregations}{subroutines}{buckets} } ];
+        }
+    });
+}
+
+sub __fleshen_package_info_dependencies {
+    my ($info, $name, $options) = @_;
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
+                        { term => { tags => "package:dependency" } },
+                        { term => { tags => "package:name=$name" } },
+                    ]
+                }
+            },
+            size => 25,
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            my @x;
+            for (@{ $res->{hits}{hits} }) {
+                my $src = $_->{_source};
+                for (@{$src->{content}}) {
+                    push @x, { name => $_ }
+                }
+            }
+            $info->{dependencies} = \@x;
         }
     });
 }
