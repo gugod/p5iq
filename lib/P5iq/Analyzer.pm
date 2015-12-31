@@ -194,7 +194,7 @@ sub extract_method_calls {
             content       => [ (map {"$_"} @invocant), @arglist_tokens ],
             class         => 'P5iq::MethodCall',
             location      => TypeRangeLineColumn($method, ($args ? $args->last_token : undef)),
-            gist          => $invocant . "->" . $method . "( ... )",
+            gist          => $invocant . "->" . $method . "(" . (@arglist_tokens ? "..." : "") . ")",
             tags          => [
                 "method:call",
                 "method:name=$method",
@@ -234,6 +234,7 @@ sub extract_function_calls {
             content       => [ (@ns ? "$s" :""), "$name", @arglist_tokens ],
             class         => 'P5iq::FunctionCall',
             location      => TypeRangeLineColumn($s, $args->last_token),
+            gist          => $name . "(" . (@arglist_tokens ? "...": "") . ")",
             tags          => [
                 "function:call",
                 "function:namespace=$namespace",
