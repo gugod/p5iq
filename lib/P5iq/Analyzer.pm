@@ -372,10 +372,11 @@ sub fleshen_scope_locations {
     return \@loc;
 }
 
-sub extract_pod{
+sub extract_pod {
     my ($ppi_doc) = @_;
     my @doc;
     for my $x ( $ppi_doc->tokens ) {
+        next unless $x->isa("PPI::Token::Pod");
         my $doc = {
             content  => $x->content,
             class    => $x->class,
@@ -383,23 +384,22 @@ sub extract_pod{
             scope    => [],
             location => TypeRangeLineColumn($x),
         };
-        if (ref($x) eq 'PPI::Token::Pod') {
-            my $parser = Pod::POM->new();
-            my $pom = $parser->parse_text( $x->{content} );
-            my $text_view = 'Pod::POM::View::Text';
-            foreach my $s ( @{$pom->head1()} ) {
+
+        my $parser = Pod::POM->new();
+        my $pom = $parser->parse_text( $x->content . "");
+        my $text_view = 'Pod::POM::View::Text';
+        foreach my $s ( @{$pom->head1()} ) {
+            my $doc_t = clone $doc;
+            $doc_t->{title} = $s->title()->present($text_view);
+            $doc_t->{text} = $s->text()->present($text_view);
+            push @{$doc_t->{tags}}, 'pod:head1';
+            push @doc, $doc_t;
+            foreach my $ss ($s->head2()) {
                 my $doc_t = clone $doc;
-                $doc_t->{title} = $s->title()->present($text_view);
-                $doc_t->{text} = $s->text()->present($text_view);
-                push @{$doc_t->{tags}}, 'pod:head1';
+                $doc_t->{title} = $ss->title()->present($text_view);
+                $doc_t->{text} = $ss->text()->present($text_view);
+                push @{$doc_t->{tags}}, 'pod:head2';
                 push @doc, $doc_t;
-                foreach my $ss ($s->head2()) {
-                    my $doc_t = clone $doc;
-                    $doc_t->{title} = $ss->title()->present($text_view);
-                    $doc_t->{text} = $ss->text()->present($text_view);
-                    push @{$doc_t->{tags}}, 'pod:head2';
-                    push @doc, $doc_t;
-                }
             }
         }
     }
