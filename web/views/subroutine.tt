@@ -6,6 +6,20 @@
     <% END %>
     </ul>
 
+    <h4>use cases: function calls </h4>
+    <ul>
+    <% FOREACH thing IN subroutine_info.function_calls %>
+    <li><a href="<% thing.url %>"><% thing.file %>: <% thing.location.begin.line %></a></li>
+    <% END %>
+    </ul>
+
+    <h4>use cases: method invocations</h4>
+    <ul>
+    <% FOREACH thing IN subroutine_info.method_invocations %>
+    <li><a href="<% thing.url %>"><% thing.file %>: <% thing.location.begin.line %></a></li>
+    <% END %>
+    </ul>
+
     <h4>arg lists</h4>
-    <h4>use cases</h4>
 </div>
+

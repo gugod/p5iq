@@ -27,7 +27,8 @@ sub subroutine {
     my ($name, $options) = @_;
     my $info = {};
     __fleshen_subroutine_info_definitions($info, $name, $options);
-
+    __fleshen_subroutine_info_function_calls($info, $name, $options);
+    __fleshen_subroutine_info_method_invocations($info, $name, $options);
     return undef if keys %$info == 0;
     return $info;
 }
@@ -181,5 +182,74 @@ sub __fleshen_subroutine_info_definitions {
         }
     });
 }
+
+sub __fleshen_subroutine_info_function_calls {
+    my ($info, $name, $options) = @_;
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
+                        { term => { tags => "function:call" } },
+                        { term => { tags => "function:name=$name" } },
+                    ],
+                    (defined($options->{package}) ? (
+                     should => [
+                         { term => { tags => "function:namespace=".$options->{package} } }
+                     ]):())
+                }
+            },
+            size => 25,
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            my @x;
+            for (@{ $res->{hits}{hits} }) {
+                my $src = $_->{_source};
+                push @x, {
+                    file => $src->{file},
+                    location => $src->{location},
+                };
+            }
+            $info->{function_calls} = \@x;
+        }
+    });
+}
+
+sub __fleshen_subroutine_info_method_invocations {
+    my ($info, $name, $options) = @_;
+
+    P5iq::Search::es_search({
+        body => {
+            query => {
+                bool => {
+                    must => [
+                        (defined($options->{project}) ? { term => { project => $options->{project} } } : ()),
+                        { term => { tags => "method:call" } },
+                        { term => { tags => "method:name=$name" } },
+                    ],
+                }
+            },
+            size => 25,
+        }
+    }, sub {
+        my $res = shift;
+        if ($res->{hits}{total} > 0) {
+            my @x;
+            for (@{ $res->{hits}{hits} }) {
+                my $src = $_->{_source};
+                push @x, {
+                    file => $src->{file},
+                    location => $src->{location},
+                };
+            }
+            $info->{function_calls} = \@x;
+        }
+    });
+}
+
 
 1;
