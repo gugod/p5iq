@@ -116,6 +116,12 @@ get "/package" => sub {
         }
     }
 
+    if ($package_info->{files}) {
+        for (@{$package_info->{files}}) {
+            $_->{url} = uri_for("/file", { name=> $_->{name}, start => 1 });
+        }
+    }
+
     my $stash = {};
     $stash->{package_info} = $package_info;
 
@@ -130,6 +136,43 @@ get "/subroutine" => sub {
 
     my $subroutine_info = P5iq::Info::subroutine($subroutine_name, { package => $package_name, project => $project_name });
 
+    if ($subroutine_info->{definitions}) {
+        for (@{$subroutine_info->{definitions}}) {
+            $_->{url} = uri_for(
+                "/file", 
+                { 
+                    name => $_->{file}, 
+                    start => $_->{location}->{begin}->{line},
+                    end => $_->{location}->{end}->{line},
+                }
+            );
+        }
+    }
+    
+    if ($subroutine_info->{function_calls}) {
+        for (@{$subroutine_info->{function_calls}}) {
+            $_->{url} = uri_for(
+                "/file", 
+                { 
+                    name => $_->{file}, 
+                    start => $_->{location}->{begin}->{line},
+                }
+            );
+        }
+    }
+    
+    if ($subroutine_info->{method_invocations}) {
+        for (@{$subroutine_info->{method_invocations}}) {
+            $_->{url} = uri_for(
+                "/file", 
+                { 
+                    name => $_->{file}, 
+                    start => $_->{location}->{begin}->{line},
+                }
+            );
+        }
+    }
+
     my $stash = { subroutine_info => $subroutine_info };
     fleshen_global_content($stash);
     template subroutine => $stash;
@@ -142,22 +185,27 @@ get "/nothing" => sub {
 };
 
 get "/file" => sub {
-    my $file = params->{fn};
+    my $name = params->{name};
     my $start = params->{start};
     my $end = params->{end};
   
-    my $total_line_number = `wc -l < $file | tr -d '\n'`;
+    my $total_line_number = `wc -l < $name | tr -d '\n'`;
     my $sln = $start;
     my $eln = $end;
-    if( !$eln || $eln == $sln){
-        my $tmp = $sln;
-        $sln = ($tmp - 2) < 1 ? 1 : ($tmp - 2);
-        $eln= ($tmp + 2) > $total_line_number ? $total_line_number : ($tmp + 2);
+    if( !$sln && !$eln){
+        $sln = 1;
+        $eln = $total_line_number;
     }
-    my $abstract = `sed -n '$sln, $eln p' $file`;
+    elsif( !$eln || $eln == $sln ){
+        my $tmp = $sln;
+        $sln = ($tmp - 5) < 1 ? 1 : ($tmp - 5);
+        $eln= ($tmp + 5) > $total_line_number ? $total_line_number : ($tmp + 5);
+    }
+
+    my $abstract = `sed -n '$sln, $eln p' $name`;
     escape_html( $abstract );
     my $stash = {
-        file => $file,
+        name => $name,
         start_ln => $start,
         end_ln => $end,
         abstract => $abstract,
@@ -276,7 +324,7 @@ sub fleshen_file_url{
         for my $res (@{$results->{$type}}){
             $res->{url} = uri_for("/file",
                 {
-                    fn => $res->{file},
+                    name => $res->{file},
                     start => $res->{start},
                     end => $res->{end},
                 }
