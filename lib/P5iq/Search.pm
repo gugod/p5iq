@@ -412,6 +412,7 @@ sub list_project {
                 projects => {
                     terms => {
                         field => "project",
+                        size  => 0,
                     }
                 }
             }
