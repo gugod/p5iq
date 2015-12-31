@@ -16,6 +16,7 @@ requires 'Plack::Runner'          => 0;
 requires 'YAML'                   => 0;
 requires 'Template'               => 0;
 requires 'Gazelle'                => 0;
+requires 'HTML::Escape'           => 0;
 
 
 recommends "YAML"             => "0";
