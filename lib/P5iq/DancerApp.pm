@@ -189,7 +189,7 @@ get "/file" => sub {
     my $start = params->{start};
     my $end = params->{end};
   
-    my $total_line_number = `wc -l < $name | tr -d '\n'`;
+    my $total_line_number = count_lines_file($name);
     my $sln = $start;
     my $eln = $end;
     if( !$sln && !$eln){
