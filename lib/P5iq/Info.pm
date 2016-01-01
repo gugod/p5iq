@@ -194,17 +194,17 @@ sub __fleshen_package_info_dependencies {
                     ]
                 }
             },
-            size => 25,
+            size => 0,
+            aggregations => {
+                packages => { terms => { field => "content", size => 0 } }
+            }
         }
     }, sub {
         my $res = shift;
         if ($res->{hits}{total} > 0) {
             my @x;
-            for (@{ $res->{hits}{hits} }) {
-                my $src = $_->{_source};
-                for (@{$src->{content}}) {
-                    push @x, { name => $_ }
-                }
+            for (@{ $res->{aggregations}{packages}{buckets} }) {
+                push @x, { name => $_->{key} }
             }
             $info->{dependencies} = \@x;
         }
