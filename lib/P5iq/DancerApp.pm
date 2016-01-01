@@ -202,7 +202,8 @@ get "/file" => sub {
         $eln= ($tmp + 5) > $total_line_number ? $total_line_number : ($tmp + 5);
     }
 
-    my $abstract = `sed -n '$sln, $eln p' $name`;
+    my $abstract = read_file($name, $sln, $eln);
+
     escape_html( $abstract );
     my $stash = {
         name => $name,
@@ -333,5 +334,19 @@ sub fleshen_file_url{
     }
 }
 
+sub read_file {
+    my ($filename, $start_line, $end_line) = @_;
+    open(my $fh, "<", $filename) or die $!;
+    my $line = 0;
+    my $abstract = "";
+    local $/ = "\n";
+    while (<$fh>) {
+        $line++;
+        if ($start_line <= $line && $line <= $end_line) {
+            $abstract .= $_;
+        }
+    }
+    return $abstract;
+}
 
 true;
