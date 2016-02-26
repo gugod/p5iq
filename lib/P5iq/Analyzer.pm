@@ -20,6 +20,9 @@ sub analyze_for_index {
         p5_structure => [
             extract_subscript($ppi_doc),
         ],
+        p5_op => [
+            extract_operators($ppi_doc),
+        ],
         p5_sub => [
             extract_subroutine($ppi_doc),
             extract_function_calls($ppi_doc),
@@ -248,6 +251,36 @@ sub extract_function_calls {
     # TODO: Look for all "word followed by a list not within parenthesis"
     # foo; foo 1,2; foo bar(1,2,3), 4;
 
+    return @doc;
+}
+
+sub extract_operators {
+    my ($ppi_doc) = @_;
+    my @doc;
+    for my $x (@{ $ppi_doc->find('PPI::Token::Operator') ||[]}) {
+        my (@before, @after);
+        my $s = $x;
+        while ($s = $s->sprevious_sibling) {
+            next unless $s->isa('PPI::Token::Symbol');
+            push @before, $s;
+        }
+        $s = $x;
+        while ($s = $s->snext_sibling) {
+            next unless $s->isa('PPI::Token::Symbol');
+            push @after, $s;
+        }
+
+        my $doc = {
+            location => TypeRangeLineColumn($x),
+            content  => "$x",
+            class    => "PPI::Token::Operator",
+            tags     => [
+                (map { "symbol:before=$_" } reverse @before),
+                (map { "symbol:after=$_" }  @after),
+            ]
+        };
+        push @doc, $doc;
+    }
     return @doc;
 }
 
