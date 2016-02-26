@@ -261,11 +261,13 @@ sub extract_operators {
         my (@before, @after);
         my $s = $x;
         while ($s = $s->sprevious_sibling) {
+            next unless $s->isa('PPI::Token');
             last if $s->isa('PPI::Token::Operator');
             push @before, $s;
         }
         $s = $x;
         while ($s = $s->snext_sibling) {
+            next unless $s->isa('PPI::Token');
             last if $s->isa('PPI::Token::Operator');
             push @after, $s;
         }

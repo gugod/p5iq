@@ -197,14 +197,25 @@ sub frequency_operator {
     my ($args, $query_string, $cb) = @_;
 
     my @conditions = (
-        { term => { class => "PPI::Token::Operator" } },
         (defined($args->{in}) ? { prefix => { file => $args->{in}  } }   : ())
     );
     es_search({
         body  => {
             size  => 1,
             query => {
-                bool => { must => \@conditions }
+                constant_score => { filter => {
+                    and => [
+                        { term => { _type => "p5_op" } },
+                        { term => { class => "PPI::Token::Operator" } },
+                        @conditions
+                    ],
+                    defined($query_string) ? (
+                        or => [
+                            { "term" => { "tags" => "symbol:before=$query_string" } },
+                            { "term" => { "tags" => "symbol:after=$query_string" } }
+                        ]
+                    ):(),
+                } }
             },
             aggregations => {
                 operator => {
