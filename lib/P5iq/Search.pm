@@ -193,6 +193,31 @@ sub locate_pod {
     }, $cb);
 }
 
+sub frequency_operator {
+    my ($args, $query_string, $cb) = @_;
+
+    my @conditions = (
+        { term => { class => "PPI::Token::Operator" } },
+        (defined($args->{in}) ? { prefix => { file => $args->{in}  } }   : ())
+    );
+    es_search({
+        body  => {
+            size  => 1,
+            query => {
+                bool => { must => \@conditions }
+            },
+            aggregations => {
+                operator => {
+                    terms => {
+                        field => "content",
+                        size => $args->{size} // 25,
+                    }
+                }
+            }
+        }
+    }, $cb);
+}
+
 sub frequency_hash_keys {
     my ($args, $query_string, $cb) = @_;
 
