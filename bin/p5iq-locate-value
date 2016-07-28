@@ -5,7 +5,7 @@ use warnings;
 use FindBin;
 use lib "${FindBin::Bin}/../local/lib/perl5";
 use lib "${FindBin::Bin}/../lib";
-
+use Data::Printer;
 use P5iq::Search;
 
 use Getopt::Long;
@@ -27,7 +27,8 @@ P5iq::Search::locate_value(
         my $res = shift;
         for (@{ $res->{hits}{hits} }) {
             my $src =$_->{_source};
-            say join(":", $src->{file}, $src->{location}{begin}{line}, $src->{content});
+            say join(":", $src->{file}, $src->{location}{begin}{line});
+            say $src->{content} . "\n";
         }
     }
 );
