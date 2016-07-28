@@ -4,8 +4,6 @@ use v5.14;
 use P5iq;
 use P5iq::Analyzer;
 
-use Data::Printer;
-
 use PPI;
 use JSON qw(to_json);
 
