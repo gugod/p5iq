@@ -1,14 +1,15 @@
 #!/usr/bin/env perl
 use v5.14;
+use strict;
 use warnings;
+
+use Getopt::Long;
 
 use FindBin;
 use lib "${FindBin::Bin}/../local/lib/perl5";
 use lib "${FindBin::Bin}/../lib";
-use Data::Printer;
-use P5iq::Search;
 
-use Getopt::Long;
+use P5iq::Search;
 
 my %args;
 GetOptions(
