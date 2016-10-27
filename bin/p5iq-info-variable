@@ -2,7 +2,7 @@
 
 use v5.18;
 
-use List::MoreUtils qw(uniq);
+use List::MoreUtils qw(any uniq);
 
 use PPI;
 use PPIx::LineToSub;
@@ -23,6 +23,8 @@ unless (-f $args{file}) {
     die "File do not exist: $args{file}";
 }
 
+my %freqtab;
+
 my $wanted_var_name = $args{variable};
 my $p5_doc = PPI::Document->new($args{file});
 $p5_doc->index_locations;
@@ -33,9 +35,8 @@ my $nodes = $p5_doc->find(
         my $el = $_[1];
         return ($el->isa("PPI::Token::Symbol") && $el->content eq $wanted_var_name);
     }
-);
+) || [];
 
-my %freqtab;
 for my $n (@$nodes) {
     my $ln = $n->line_number;
     $freqtab{line}{$ln}++;
@@ -44,6 +45,19 @@ for my $n (@$nodes) {
         my ($agg, $m) = @$_;
         next unless $m && $m->isa('PPI::Token::Operator');
         $freqtab{$agg}{"$m"}++;
+    }
+}
+
+my %operator_type = (
+    (map { $_ => "string"    } ('.', 'eq', 'ne', 'cmp', '~~', '=~', '!~', 'le', 'ge', 'lt', 'gt')),
+    (map { $_ => "numerical" } ('++', '--', '**', '+', '-', '*', '/', '<', '>', '<=', '>=', '==', '!=', '<=>', '+=', '-=', '*=', '/=')),
+    (map { $_ => "reference" } ('->')),
+);
+
+for (qw(prev_operator next_operator)) {
+    for my $op (keys %{$freqtab{$_}}) {
+        my $type = $operator_type{$op} or next;
+        $freqtab{"${type}_operator"}{$op}++;
     }
 }
 
