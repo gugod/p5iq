@@ -1,0 +1,61 @@
+#!/usr/bin/env perl
+
+use v5.18;
+
+use List::MoreUtils qw(uniq);
+
+use PPI;
+use PPIx::LineToSub;
+use Getopt::Long;
+
+my %args;
+GetOptions(
+    \%args,
+    "variable=s",
+    "file=s",
+);
+
+unless (defined($args{variable}) && defined($args{file})) {
+    die "Usage: $0 --variable \$foo --file lib/Foo/Bar.pm\n";
+}
+
+unless (-f $args{file}) {
+    die "File do not exist: $args{file}";
+}
+
+my $wanted_var_name = $args{variable};
+my $p5_doc = PPI::Document->new($args{file});
+$p5_doc->index_locations;
+$p5_doc->index_line_to_sub;
+
+my $nodes = $p5_doc->find(
+    sub {
+        my $el = $_[1];
+        return ($el->isa("PPI::Token::Symbol") && $el->content eq $wanted_var_name);
+    }
+);
+
+my %freqtab;
+for my $n (@$nodes) {
+    my $ln = $n->line_number;
+    $freqtab{line}{$ln}++;
+
+    for (["prev_operator", $n->sprevious_sibling], ["next_operator", $n->snext_sibling]) {
+        my ($agg, $m) = @$_;
+        next unless $m && $m->isa('PPI::Token::Operator');
+        $freqtab{$agg}{"$m"}++;
+    }
+}
+
+for my $ln (keys %{$freqtab{line}}) {
+    my $sub_name = $p5_doc->line_to_sub($ln);
+    $freqtab{subroutine}{$sub_name}++;
+}
+
+say "\n# About this variable: $wanted_var_name";
+for my $k (sort keys %freqtab) {
+    say "\n$k frequency";
+    for my $k2 (sort { $freqtab{$k}{$b} <=> $freqtab{$k}{$a} } keys %{$freqtab{$k}}) {
+        printf "  %6d - %s\n", $freqtab{$k}{$k2}, $k2;
+    }
+}
