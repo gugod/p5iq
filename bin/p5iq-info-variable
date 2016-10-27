@@ -52,6 +52,8 @@ for my $ln (keys %{$freqtab{line}}) {
     $freqtab{subroutine}{$sub_name}++;
 }
 
+delete($freqtab{line});
+
 say "\n# About this variable: $wanted_var_name";
 for my $k (sort keys %freqtab) {
     say "\n$k frequency";
