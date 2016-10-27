@@ -54,10 +54,10 @@ my %operator_type = (
     (map { $_ => "reference" } ('->')),
 );
 
-for (qw(prev_operator next_operator)) {
-    for my $op (keys %{$freqtab{$_}}) {
+for my $a (qw(prev_operator next_operator)) {
+    for my $op (keys %{$freqtab{$a}}) {
         my $type = $operator_type{$op} or next;
-        $freqtab{"${type}_operator"}{$op}++;
+        $freqtab{"${type}_operator"}{$op} += $freqtab{$a}{$op};
     }
 }
 
@@ -71,7 +71,11 @@ delete($freqtab{line});
 say "\n# About this variable: $wanted_var_name";
 for my $k (sort keys %freqtab) {
     say "\n$k frequency";
+    my $sum = 0;
     for my $k2 (sort { $freqtab{$k}{$b} <=> $freqtab{$k}{$a} } keys %{$freqtab{$k}}) {
         printf "  %6d - %s\n", $freqtab{$k}{$k2}, $k2;
+        $sum += $freqtab{$k}{$k2};
     }
+    printf "  %6d - %s\n", $sum, "(Total)";
 }
+say "";
